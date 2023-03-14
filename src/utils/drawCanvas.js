@@ -1,4 +1,11 @@
-import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
+import {
+  drawConnectors as _drawConnectors,
+  drawLandmarks as _drawLandmarks,
+} from "@mediapipe/drawing_utils";
+
+const drawConnectors = _drawConnectors || window.drawConnectors;
+const drawLandmarks = _drawLandmarks || window.drawLandmarks;
+
 import {
   FACEMESH_FACE_OVAL,
   FACEMESH_LEFT_EYE,

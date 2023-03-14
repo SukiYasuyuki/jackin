@@ -37,7 +37,7 @@ export default function App() {
     //e.preventDefault();
   };
 
-  console.log(comments);
+  //console.log(comments);
   return (
     <div>
       <button onClick={clearComments}>コメント消去</button>
