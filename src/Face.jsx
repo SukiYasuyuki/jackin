@@ -2,14 +2,14 @@ import React, { FC, useCallback, useEffect, useRef } from "react";
 import Webcam from "react-webcam";
 import { button, useControls } from "leva";
 
-import { Camera } from "@mediapipe/camera_utils";
+import { Camera } from "@mediapipe/camera_utils/camera_utils";
 import {
   FaceMesh,
   FACEMESH_LEFT_EYE,
   FACEMESH_LIPS,
   FACEMESH_RIGHT_EYE,
   Results,
-} from "@mediapipe/face_mesh";
+} from "@mediapipe/face_mesh/face_mesh";
 import { draw } from "./utils/drawCanvas";
 import Emoticon from "./components/Emoticon";
 import useStore from "./store";
