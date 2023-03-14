@@ -6,21 +6,30 @@ export default function LogIn() {
   const setName = useStore((state) => state.setName);
 
   return (
-    <form
-      onSubmit={(e) => {
-        setName(name);
-        e.preventDefault();
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        display: "grid",
+        placeContent: "center",
       }}
     >
-      <label>あなたの名前</label>
+      <form
+        onSubmit={(e) => {
+          setName(name);
+          e.preventDefault();
+        }}
+      >
+        <label>あなたの名前</label>
 
-      <input
-        type="text"
-        value={name}
-        placeholder={"表示される名前"}
-        onChange={(e) => set(e.target.value)}
-      />
-      <input disabled={!name} type="submit" value="参加する" />
-    </form>
+        <input
+          type="text"
+          value={name}
+          placeholder={"表示される名前"}
+          onChange={(e) => set(e.target.value)}
+        />
+        <input disabled={!name} type="submit" value="参加する" />
+      </form>
+    </div>
   );
 }

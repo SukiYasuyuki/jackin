@@ -12,6 +12,8 @@ import useStore from "./store";
 import { useRef } from "react";
 import { useControls } from "leva";
 import colors from "./utils/colors";
+import { styled } from "@stitches/react";
+import Emoticon from "./components/Emoticon";
 
 function Control() {
   const setAngle = useStore((state) => state.setAngle);
@@ -201,12 +203,17 @@ function UI() {
           .normalize()
           .dot(new THREE.Vector3(pos[0], pos[1], pos[2]).normalize());
 
+        const p = {
+          x: dot < 0 ? projection.x : -projection.x,
+          y: dot < 0 ? projection.y : -projection.y,
+        };
+
         const area =
-          abs(projection.x) < abs(projection.y)
-            ? projection.y > 0
+          abs(p.x) < abs(p.y)
+            ? p.y > 0
               ? "top"
               : "bottom"
-            : projection.x > 0
+            : p.x > 0
             ? "right"
             : "left";
 
@@ -214,22 +221,22 @@ function UI() {
         switch (area) {
           case "top":
             y = 1;
-            x = (projection.x / projection.y) * y;
+            x = (p.x / p.y) * y;
             extended = { x, y };
             break;
           case "bottom":
             y = -1;
-            x = (projection.x / projection.y) * y;
+            x = (p.x / p.y) * y;
             extended = { x, y };
             break;
           case "left":
             x = -1;
-            y = (projection.y / projection.x) * x;
+            y = (p.y / p.x) * x;
             extended = { x, y };
             break;
           case "right":
             x = 1;
-            y = (projection.y / projection.x) * x;
+            y = (p.y / p.x) * x;
             extended = { x, y };
             break;
           default:
@@ -242,34 +249,101 @@ function UI() {
 
         return (
           <Fragment key={connectionId}>
-            <div
+            <svg
               style={{
-                width: 10,
-                height: 10,
-                background: color,
                 position: "absolute",
+                left: 0,
+                top: 0,
                 top: `${-projection.y * 50 + 50}%`,
                 left: `${projection.x * 50 + 50}%`,
+                //transform: `translateX(${x}px) translateY(${y}px)`,
               }}
-            />
-            <div
+              width="24"
+              height="36"
+              viewBox="0 0 24 36"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z"
+                fill={color}
+                stroke="white"
+                style={{
+                  filter: "drop-shadow(0px 0px 4px rgb(0 0 0 / 0.4))",
+                }}
+              />
+            </svg>
+
+            <EdgeCircle
               style={{
-                width: 100,
-                height: 100,
-                borderRadius: 999,
-                background: color,
-                position: "absolute",
-                transform: "translate3d(-50%, -50%, 0)",
+                color,
+
                 top: `${-extended.y * 50 + 50}%`,
                 left: `${extended.x * 50 + 50}%`,
               }}
-            />
+              area={area}
+            >
+              <Emoticon />
+              <Label area={area} style={{ background: color }}>
+                {presence.name}
+              </Label>
+            </EdgeCircle>
           </Fragment>
         );
       })}
     </Html>
   );
 }
+
+const EdgeCircle = styled("div", {
+  width: 64,
+  height: 64,
+  borderRadius: 999,
+  position: "absolute",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  outlineColor: "currentcolor",
+  outlineStyle: "solid",
+  outlineWidth: 4,
+  outlineOffset: 4,
+  //transform: "translate3d(-50%, -50%, 0)",
+  variants: {
+    area: {
+      top: {
+        translate: "-50% -20%",
+      },
+      bottom: {
+        translate: "-50% -80%",
+      },
+      left: {
+        translate: "-20% -50%",
+      },
+      right: {
+        translate: "-80% -50%",
+      },
+    },
+  },
+});
+
+const Label = styled("div", {
+  position: "absolute",
+  color: "black",
+  borderRadius: "999px",
+  fontSize: 12,
+  height: "20px",
+  lineHeight: "20px",
+  bottom: "-12px",
+  padding: "0 4px",
+  variants: {
+    area: {
+      bottom: {
+        bottom: "auto",
+        top: "-12px",
+      },
+    },
+  },
+});
 
 export default function Scene() {
   return (

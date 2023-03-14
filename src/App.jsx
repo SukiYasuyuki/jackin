@@ -15,6 +15,10 @@ import MemberList from "./components/MemberList";
 import Stream from "./Stream";
 import useMic from "./hooks/useMic";
 import VolumeMeter from "./VolumeMeter";
+import PlayerControl from "./components/PlayerControl";
+import Functions from "./components/Functions";
+import PieMenu from "./Pie";
+import LongPressMenu from "./LongPressMenu";
 //import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 
 const App = () => {
@@ -117,7 +121,7 @@ function App2() {
   const name = useStore((state) => state.name);
   const setMic = useStore((state) => state.setMic);
 
-  useMic(setMic);
+  //useMic(setMic);
   return (
     <div
       style={{ width: "100vw", height: "100vh" }}
@@ -127,13 +131,15 @@ function App2() {
       {!!name ? (
         <div style={{ width: "100vw", height: "100vh" }}>
           <Scene />
-          <MemberList />
         </div>
       ) : (
         <LogIn />
       )}
+      <PlayerControl />
+      <MemberList />
+      <Functions />
     </div>
   );
 }
 
-export default Stream;
+export default App2;

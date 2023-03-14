@@ -11,6 +11,14 @@ const useStore = create()(
     (set) => ({
       cursor: { x: 0, y: 0 },
       angle: { azimuth: 0, polaris: 0 },
+      face: {
+        roll: 0,
+        leftEyeOpen: 1,
+        rightEyeOpen: 1,
+        mouthOpen: 1,
+        mouthWide: 1,
+      },
+      setFace: (face) => set({ face }),
       setAngle: (angle) => set({ angle }),
       comments: {},
       addComment: (comment) =>
@@ -56,6 +64,7 @@ const useStore = create()(
         angle: true,
         mic: true,
         name: true,
+        face: true,
       },
       storageMapping: {
         //sync: true,

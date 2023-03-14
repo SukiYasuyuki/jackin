@@ -31,6 +31,7 @@ export const draw = (ctx, results, bgImage, emphasis) => {
 
   ctx.save();
   ctx.clearRect(0, 0, width, height);
+  //ctx.scale(-1, 1);
 
   if (bgImage) ctx.drawImage(results.image, 0, 0, width, height);
 
@@ -58,8 +59,35 @@ export const draw = (ctx, results, bgImage, emphasis) => {
       drawConnectors(ctx, landmarks, FACEMESH_LIPS, face_oval);
 
       // landmarkの強調描画
-      console.log(landmarks);
+      //console.log(landmarks);
       //drawPoint(ctx, landmarks[emphasis]);
+      const leftEye = landmarks[33];
+      const rightEye = landmarks[263];
+      const noseTip = landmarks[1];
+      const leftMouth = landmarks[61];
+      const rightMouth = landmarks[291];
+      const leftEar = landmarks[234];
+      const rightEar = landmarks[454];
+      const rightEyeTop = landmarks[386];
+      const rightEyeBottom = landmarks[374];
+      const leftEyeTop = landmarks[159];
+      const leftEyeBottom = landmarks[145];
+      const topMouth = landmarks[13];
+      const bottomMouth = landmarks[14];
+
+      drawPoint(ctx, leftEye);
+      drawPoint(ctx, rightEye);
+      drawPoint(ctx, leftEyeTop);
+      drawPoint(ctx, rightEyeTop);
+      drawPoint(ctx, leftEyeBottom);
+      drawPoint(ctx, rightEyeBottom);
+      drawPoint(ctx, noseTip);
+      drawPoint(ctx, leftMouth);
+      drawPoint(ctx, rightMouth);
+      drawPoint(ctx, topMouth);
+      drawPoint(ctx, bottomMouth);
+      drawPoint(ctx, leftEar);
+      drawPoint(ctx, rightEar);
     }
   }
   ctx.restore();
@@ -74,7 +102,7 @@ const drawPoint = (ctx, point) => {
   //console.log(point);
   const x = ctx.canvas.width * point.x;
   const y = ctx.canvas.height * point.y;
-  const r = 5;
+  const r = 2;
 
   ctx.fillStyle = "#22a7f2";
   ctx.beginPath();
