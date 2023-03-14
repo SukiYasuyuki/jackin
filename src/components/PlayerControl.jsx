@@ -4,7 +4,7 @@ import { getTime } from "../utils/math";
 import useInterval from "../hooks/useInterval";
 import useIdle from "../hooks/useIdle";
 
-import Icon from "@mdi/react";
+import Icon from "./Icon";
 import IconButton from "./IconButton";
 import {
   mdiPlay,

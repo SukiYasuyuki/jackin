@@ -1,5 +1,5 @@
 import { styled } from "@stitches/react";
-import Icon from "@mdi/react";
+import Icon from "./Icon";
 
 const Button = styled("div", {
   width: 48,
