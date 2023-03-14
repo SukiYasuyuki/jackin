@@ -2,9 +2,9 @@ import React, { FC, useCallback, useEffect, useRef } from "react";
 import Webcam from "react-webcam";
 import { button, useControls } from "leva";
 
-import { Camera } from "@mediapipe/camera_utils/camera_utils";
+import { Camera as _Camera } from "@mediapipe/camera_utils/camera_utils";
 import {
-  FaceMesh,
+  FaceMesh as _FaceMesh,
   FACEMESH_LEFT_EYE,
   FACEMESH_LIPS,
   FACEMESH_RIGHT_EYE,
@@ -13,6 +13,9 @@ import {
 import { draw } from "./utils/drawCanvas";
 import Emoticon from "./components/Emoticon";
 import useStore from "./store";
+
+const FaceMesh = _FaceMesh || window.FaceMesh;
+const Camera = _Camera || window.Camera;
 
 function calculateQuaternion(vector1, vector2) {
   // 正規化
