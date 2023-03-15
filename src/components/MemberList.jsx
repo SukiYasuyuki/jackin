@@ -17,6 +17,7 @@ const Container = styled("div", {
   background: "rgba(0,0,0,0.5)",
   backdropFilter: "blur(20px)",
   borderRadius: 16,
+  overflow: "clip",
 });
 
 const UserListItems = styled("div", {
@@ -80,12 +81,16 @@ export default function MemberList() {
   const setSync = useStore((state) => state.setSync);
   const clearComments = useStore((state) => state.clearComments);
 
+  const edge = useStore((state) => state.edge);
+  const setEdge = useStore((state) => state.setEdge);
   useControls({
     clear: button(clearComments),
+    edge: { value: false, onChange: setEdge },
   });
   return (
-    <Container>
+    <Container style={{ opacity: edge ? 0 : 1 }}>
       <Face />
+      <div>メンバーリスト</div>
       <UserList>
         <UserListItems>
           <UserThumbnail>
@@ -108,11 +113,14 @@ export default function MemberList() {
             true && ( //presence.name
               <UserListItems
                 key={connectionId}
-                onClick={() => setSelected(connectionId)}
+                //onClick={() => setSelected(connectionId)}
               >
                 <UserThumbnail
-                  style={{ outlineColor: color }}
-                  //scale: `${0.5 + map(presence.mic, 0.15, 1, 0, 1)}`,
+                  style={{
+                    outlineColor: color,
+                    outlineWidth: map(presence.mic, 0.15, 1, 2, 10),
+                  }}
+                  //scale: `${0.5 + )}`,
                 >
                   <Emoticon style={{ scale: "0.5" }} {...presence.face} />
                 </UserThumbnail>
@@ -186,9 +194,14 @@ function Chat() {
 
   console.log(comments);
   return (
-    <div>
+    <div
+      style={{
+        paddingTop: 24,
+        borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+      }}
+    >
       <div>チャット</div>
-      <button onClick={() => setSelected(null)}>←</button>
+      {/* <button onClick={() => setSelected(null)}>←</button> */}
       To：
       {selected ? selected : "ALL"}
       <div style={{ minHeight: 200 }}>

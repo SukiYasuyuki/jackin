@@ -14,6 +14,7 @@ import { useControls } from "leva";
 import colors from "./utils/colors";
 import { styled } from "@stitches/react";
 import Emoticon from "./components/Emoticon";
+import { map } from "./utils/math";
 
 function Control() {
   const setAngle = useStore((state) => state.setAngle);
@@ -174,6 +175,7 @@ function Cursors() {
 function UI() {
   const others = useStore((state) => state.liveblocks.others);
   const { camera } = useThree();
+  const edge = useStore((state) => state.edge);
 
   return (
     <Html
@@ -273,21 +275,23 @@ function UI() {
                 }}
               />
             </svg>
+            {edge && (
+              <EdgeCircle
+                style={{
+                  color,
 
-            <EdgeCircle
-              style={{
-                color,
-
-                top: `${-extended.y * 50 + 50}%`,
-                left: `${extended.x * 50 + 50}%`,
-              }}
-              area={area}
-            >
-              <Emoticon />
-              <Label area={area} style={{ background: color }}>
-                {presence.name}
-              </Label>
-            </EdgeCircle>
+                  top: `${-extended.y * 50 + 50}%`,
+                  left: `${extended.x * 50 + 50}%`,
+                  outlineWidth: map(presence.mic, 0.15, 1, 4, 12),
+                }}
+                area={area}
+              >
+                <Emoticon {...presence.face} />
+                <Label area={area} style={{ background: color }}>
+                  {presence.name}
+                </Label>
+              </EdgeCircle>
+            )}
           </Fragment>
         );
       })}

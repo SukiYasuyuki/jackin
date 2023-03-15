@@ -121,7 +121,7 @@ function App2() {
   const name = useStore((state) => state.name);
   const setMic = useStore((state) => state.setMic);
 
-  //useMic(setMic);
+  useMic(setMic);
   return (
     <div
       style={{ width: "100vw", height: "100vh" }}
@@ -131,13 +131,13 @@ function App2() {
       {!!name ? (
         <div style={{ width: "100vw", height: "100vh" }}>
           <Scene />
+          <PlayerControl />
+          <MemberList />
+          <Functions />
         </div>
       ) : (
         <LogIn />
       )}
-      <PlayerControl />
-      <MemberList />
-      <Functions />
     </div>
   );
 }

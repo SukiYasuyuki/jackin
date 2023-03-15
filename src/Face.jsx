@@ -3,13 +3,7 @@ import Webcam from "react-webcam";
 import { button, useControls } from "leva";
 
 import { Camera as _Camera } from "@mediapipe/camera_utils/camera_utils";
-import {
-  FaceMesh as _FaceMesh,
-  FACEMESH_LEFT_EYE,
-  FACEMESH_LIPS,
-  FACEMESH_RIGHT_EYE,
-  Results,
-} from "@mediapipe/face_mesh/face_mesh";
+import { FaceMesh as _FaceMesh } from "@mediapipe/face_mesh/face_mesh";
 import { draw } from "./utils/drawCanvas";
 import Emoticon from "./components/Emoticon";
 import useStore from "./store";
@@ -224,7 +218,13 @@ export default function App() {
   }, [onResults]);
 
   return (
-    <div style={{ position: "relative" }}>
+    <div
+      style={{
+        position: "relative",
+        scale: `${280 / 320}`,
+        transformOrigin: "left top",
+      }}
+    >
       <Webcam
         ref={webcamRef}
         style={{ display: "none" }}
@@ -243,14 +243,37 @@ export default function App() {
         style={{ scale: "-1 1" }}
       />
       <Avatar />
+      <MyLabel />
+    </div>
+  );
+}
+
+function MyLabel() {
+  const name = useStore((state) => state.name);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 16,
+        top: 16,
+        background: "rgba(0,0,0,0.5)",
+        padding: "4px 8px",
+        borderRadius: 4,
+      }}
+    >
+      {name}
     </div>
   );
 }
 
 function Avatar() {
   const face = useStore((state) => state.face);
-  console.log(face);
+  //console.log(face);
   return (
-    <Emoticon {...face} style={{ position: "absolute", left: 0, bottom: 0 }} />
+    <Emoticon
+      {...face}
+      style={{ position: "absolute", left: 16, bottom: 16 }}
+    />
   );
 }

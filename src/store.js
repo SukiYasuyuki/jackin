@@ -18,6 +18,8 @@ const useStore = create()(
         mouthOpen: 1,
         mouthWide: 1,
       },
+      edge: false,
+      setEdge: (edge) => set({ edge }),
       setFace: (face) => set({ face }),
       setAngle: (angle) => set({ angle }),
       comments: {},

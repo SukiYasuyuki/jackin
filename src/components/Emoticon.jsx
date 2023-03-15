@@ -11,7 +11,7 @@ export default function Emoticon({ roll, mouthOpen, style }) {
         <circle cx={0} cy={0} r={32} fill="#ffea9e" />
         <circle cx={-11} cy={-6} r={5} fill="#000000c1" />
         <circle cx={11} cy={-6} r={5} fill="#000000c1" />
-        <circle cx={0} cy={10} r={20 * mouthOpen} fill="#cb191962" />
+        <circle cx={0} cy={10} r={10 * mouthOpen + 5} ry={5} fill="#cb191962" />
       </g>
       <circle />
     </svg>
