@@ -10,9 +10,18 @@ const LongPressMenu = ({
   const [isOpen, setIsOpen] = React.useState(false);
   const [position, setPosition] = React.useState({ x: 0, y: 0 });
 
+  const [val, setVal] = React.useState({
+    open: false,
+    position: { x: 0, y: 0 },
+  });
+
   const onLongPress = React.useCallback((event) => {
-    setIsOpen(true);
-    setPosition({ x: event.clientX, y: event.clientY });
+    //setPosition({ x: event.clientX, y: event.clientY });
+    //setIsOpen(true);
+    setVal({
+      open: true,
+      position: { x: event.clientX, y: event.clientY },
+    });
   }, []);
 
   const closeMenu = React.useCallback(() => {
@@ -27,10 +36,15 @@ const LongPressMenu = ({
   return (
     <div {...longPressProps} style={{ width: "100vw", height: "100vh" }}>
       {children}
-      <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
+      <button onClick={onLongPress}>opne</button>
+      <DropdownMenu.Root open={val.open} onOpenChange={(e) => console.log("c")}>
         <DropdownMenu.Portal>
           <DropdownMenuContent
-            style={{ position: "absolute", top: position.y, left: position.x }}
+            style={{
+              position: "absolute",
+              top: val.position.y,
+              left: val.position.x,
+            }}
           >
             {items.map((item) => (
               <DropdownMenuItem
@@ -104,9 +118,10 @@ const contentStyles = {
   padding: 5,
   boxShadow:
     "0px 10px 38px -10px rgba(22, 23, 24, 0.35), 0px 10px 20px -15px rgba(22, 23, 24, 0.2)",
-  animationDuration: "400ms",
+  animationDuration: "4000ms",
   animationTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
   willChange: "transform, opacity",
+
   '&[data-state="open"]': {
     '&[data-side="top"]': { animationName: slideDownAndFade },
     '&[data-side="right"]': { animationName: slideLeftAndFade },

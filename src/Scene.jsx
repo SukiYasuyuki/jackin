@@ -49,7 +49,7 @@ function Control() {
         const polaris = target.getPolarAngle();
         setAngle({ azimuth, polaris });
       }}
-      enabled={!lock}
+      enabled={controlEnabled}
       makeDefault
       enablePan={false}
       rotateSpeed={0.2}
@@ -102,7 +102,7 @@ function Still() {
   const setControlEnabled = useStore((state) => state.setControlEnabled);
   //const addFov = useLiveStore((state) => state.addFov);
 
-  const tex = useTexture("/still2.jpg");
+  const tex = useTexture("/still3.jpg");
 
   useEffect(() => {}, []);
 
@@ -125,14 +125,15 @@ function Still() {
       rotation-y={-Math.PI / 2}
       onPointerMove={(e) => {
         setCursor(xyz2latlng(e.point));
-        cancel();
+        //cancel();
       }}
+      /*
       onPointerDown={start}
       onPointerUp={() => {
         cancel();
-        setControlEnabled(true);
+        //setControlEnabled(true);
       }}
-
+      */
       //onWheel={(e) => addFov(e.wheelDelta * -0.01)} //e.wheelDelta
     >
       <meshBasicMaterial toneMapped={false} side={THREE.BackSide} map={tex} />
@@ -176,6 +177,8 @@ function UI() {
   const others = useStore((state) => state.liveblocks.others);
   const { camera } = useThree();
   const edge = useStore((state) => state.edge);
+  const comments = useStore((state) => state.comments);
+  const reactions = useStore((state) => state.reactions);
 
   return (
     <Html
@@ -249,6 +252,11 @@ function UI() {
 
         const color = colors[connectionId % colors.length];
 
+        const comment = Object.entries(comments).findLast(
+          ([_, { to, from }]) => connectionId === from
+        );
+        const reaction = reactions.findLast((r) => r.id === connectionId);
+
         return (
           <Fragment key={connectionId}>
             <svg
@@ -290,6 +298,19 @@ function UI() {
                 <Label area={area} style={{ background: color }}>
                   {presence.name}
                 </Label>
+                {comment && <Comment area={area}>{comment[1].text}</Comment>}
+                {reaction && (
+                  <div
+                    style={{
+                      fontSize: 64,
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
+                  >
+                    {reaction.value}
+                  </div>
+                )}
               </EdgeCircle>
             )}
           </Fragment>
@@ -315,16 +336,49 @@ const EdgeCircle = styled("div", {
   variants: {
     area: {
       top: {
-        translate: "-50% -20%",
+        translate: "-50% -10%",
       },
       bottom: {
-        translate: "-50% -80%",
+        translate: "-50% -90%",
       },
       left: {
-        translate: "-20% -50%",
+        translate: "-10% -50%",
       },
       right: {
-        translate: "-80% -50%",
+        translate: "-90% -50%",
+      },
+    },
+  },
+});
+
+const Comment = styled("div", {
+  position: "absolute",
+  color: "black",
+  background: "white",
+  borderRadius: "999px",
+  whiteSpace: "nowrap",
+  fontSize: 14,
+  //height: "20px",
+  lineHeight: "20px",
+  top: "-40px",
+  padding: "4px 12px",
+  variants: {
+    area: {
+      top: {
+        left: "auto",
+        right: "auto",
+        top: "auto",
+        bottom: "-40px",
+      },
+      bottom: {
+        left: "auto",
+        right: "auto",
+      },
+      left: {
+        left: "16px",
+      },
+      right: {
+        right: "16px",
       },
     },
   },
@@ -349,9 +403,9 @@ const Label = styled("div", {
   },
 });
 
-export default function Scene() {
+export default function Scene(props) {
   return (
-    <Canvas>
+    <Canvas {...props}>
       <Suspense>
         <Still />
       </Suspense>

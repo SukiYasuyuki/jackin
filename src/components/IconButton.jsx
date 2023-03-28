@@ -1,4 +1,5 @@
 import { styled } from "@stitches/react";
+import { forwardRef } from "react";
 import Icon from "./Icon";
 
 const Button = styled("div", {
@@ -7,6 +8,8 @@ const Button = styled("div", {
   borderRadius: "50%",
   display: "grid",
   placeContent: "center",
+  backdropFilter: "blur(40px)",
+  background: "rgba(0,0,0,0.3)",
   "&:hover": {
     background: "rgba(255, 255, 255, 0.1)",
     cursor: "pointer",
@@ -21,10 +24,12 @@ const Button = styled("div", {
   },
 });
 
-export default function IconButton({ icon, ...props }) {
+function IconButton({ icon, ...props }, ref) {
   return (
-    <Button {...props}>
+    <Button {...props} ref={ref}>
       <Icon path={icon} size={1} />
     </Button>
   );
 }
+
+export default forwardRef(IconButton);

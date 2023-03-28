@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import useStore from "./store";
+import useLongPress from "./hooks/useLongPress";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 //import "./App.css";
 import { useState } from "react";
@@ -11,14 +13,19 @@ import Reaction from "./Reaction";
 import Comments from "./Comments";
 import LogIn from "./components/LogIn";
 import ConfigPanel from "./components/ConfigPanel";
-import MemberList from "./components/MemberList";
+import SidePanel from "./components/SidePanel";
 import Stream from "./Stream";
 import useMic from "./hooks/useMic";
 import VolumeMeter from "./VolumeMeter";
 import PlayerControl from "./components/PlayerControl";
 import Functions from "./components/Functions";
 import PieMenu from "./Pie";
+import Tile from "./Tile";
 import LongPressMenu from "./LongPressMenu";
+import Emoticon from "./components/Emoticon";
+import Voice from "./VoiceRecognition";
+import { PieContainer, Item } from "./Pie";
+import FlyingReaction from "./components/FlyingReaction";
 //import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 
 const App = () => {
@@ -119,12 +126,12 @@ function App2() {
   }, [enterRoom, leaveRoom]);
 
   const name = useStore((state) => state.name);
-  const setMic = useStore((state) => state.setMic);
 
-  useMic(setMic);
+  //useMic(setMic);
   return (
     <div
       style={{ width: "100vw", height: "100vh" }}
+
       //onPointerMove={(e) => setCursor({ x: e.clientX, y: e.clientY })}
     >
       <ConfigPanel />
@@ -132,14 +139,81 @@ function App2() {
         <div style={{ width: "100vw", height: "100vh" }}>
           <Scene />
           <PlayerControl />
-          <MemberList />
+          <SidePanel />
           <Functions />
         </div>
       ) : (
         <LogIn />
       )}
+      {/* <Pie /> */}
     </div>
   );
 }
 
+function Pie() {
+  const radius = 120;
+  const innerRadius = 30;
+
+  const controlEnabled = useStore((state) => state.controlEnabled);
+  const setControlEnabled = useStore((state) => state.setControlEnabled);
+  return (
+    <DropdownMenu.Root
+      open={!controlEnabled}
+      onOpenChange={(val) => setControlEnabled(!val)}
+    >
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content>
+          <PieContainer
+            css={{ width: radius * 2, height: radius * 2 }}
+            style={{
+              top: 200, //position.y - radius,
+              left: 200, //position.x - radius,
+            }}
+          >
+            {menuItems.map((item, index) => (
+              <DropdownMenu.Item
+                key={index}
+                onSelect={(e) => console.log(item.label)}
+              >
+                <Item
+                  index={index}
+                  innerRadius={innerRadius}
+                  radius={radius}
+                  sliceAngle={sliceAngle}
+                  //onClick={() => console.log(index)}
+                >
+                  <div>{item.label}</div>
+                </Item>
+              </DropdownMenu.Item>
+            ))}
+            <div
+              //onClick={closeMenu}
+              style={{
+                width: innerRadius * 2,
+                height: innerRadius * 2,
+                //background: "red",
+                position: "absolute",
+                borderRadius: "50%",
+              }}
+            ></div>
+          </PieContainer>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
+
 export default App2;
+
+const menuItems = [
+  { label: "👍", color: "#f00" },
+  { label: "🔥", color: "#0f0" },
+  { label: "😍", color: "#00f" },
+  { label: "👀", color: "#ff0" },
+  { label: "😱", color: "#0ff" },
+  { label: "🙁", color: "#f00" },
+  //{ label: "Item 6", color: "#f0f" },
+  //{ label: "Item 7", color: "#0f0" },
+];
+
+const sliceAngle = 360 / menuItems.length;

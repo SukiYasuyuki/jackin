@@ -91,6 +91,7 @@ const SliderRange = styled(Slider.Range, {
   backgroundColor: "white",
   borderRadius: "9999px",
   height: "100%",
+  transition: "background 0.5s linear",
   variants: {
     live: {
       true: {
@@ -110,18 +111,27 @@ const SliderThumb = styled(Slider.Thumb, {
   //'&:focus': { outline: 'none', boxShadow: `0 0 0 5px ${blackA.blackA8}` },
 });
 
+const Time = styled("div", {
+  fontVariantNumeric: "tabular-nums",
+});
+
 export default function PlayerControl() {
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(1);
-  /*
-  const { live } = useControls({
-    live: true,
-  });
-  */
   const [elapsed, setElapsed] = useState(10 * 60);
   useInterval(() => setElapsed((t) => t + 1), 1000);
   const live = progress > 0.99 && playing;
   const isIdle = useIdle(3000);
+
+  const rewind = () => {
+    const current = elapsed * progress;
+    const target = current - 10;
+    setProgress(target / elapsed);
+  };
+
+  const forward = () => {
+    setProgress((elapsed * progress + 10) / elapsed);
+  };
 
   return (
     <Container inactive={isIdle}>
@@ -141,14 +151,14 @@ export default function PlayerControl() {
         <SliderThumb />
       </SliderRoot>
       <Controls>
-        <IconButton icon={mdiRewind10} />
+        <IconButton icon={mdiRewind10} onClick={rewind} />
         <IconButton
           icon={playing ? mdiPause : mdiPlay}
           onClick={() => {
             setPlaying((b) => !b);
           }}
         />
-        <IconButton icon={mdiFastForward10} disabled={live} />
+        <IconButton icon={mdiFastForward10} disabled={live} onClick={forward} />
         <LiveButton
           live={live}
           onClick={() => {
@@ -159,10 +169,10 @@ export default function PlayerControl() {
           <Icon path={live ? mdiCircleMedium : mdiArrowRightThin} size={1} />
           LIVE
         </LiveButton>
-        <div>
+        <Time>
           {!live && `${getTime(elapsed * progress)} / `}
           <span style={{ color: "red" }}>{getTime(elapsed)}</span>
-        </div>
+        </Time>
       </Controls>
     </Container>
   );

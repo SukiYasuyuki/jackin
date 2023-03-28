@@ -1,6 +1,4 @@
 import useStore from "../store";
-import { useState } from "react";
-import useMyId from "../hooks/useMyId";
 import { button, useControls } from "leva";
 import colors from "../utils/colors";
 import { map, clamp } from "../utils/math";
@@ -8,17 +6,9 @@ import { styled } from "@stitches/react";
 import * as Switch from "@radix-ui/react-switch";
 import Emoticon from "./Emoticon";
 import Face from "../Face";
-
-const Container = styled("div", {
-  position: "absolute",
-  top: 24,
-  left: 24,
-  width: 280,
-  background: "rgba(0,0,0,0.5)",
-  backdropFilter: "blur(20px)",
-  borderRadius: 16,
-  overflow: "clip",
-});
+import Icon from "./Icon";
+import CommentList from "./CommentList";
+import useMyId from "../hooks/useMyId";
 
 const UserListItems = styled("div", {
   display: "flex",
@@ -32,11 +22,16 @@ const UserListItems = styled("div", {
   },
 });
 const UserList = styled("div", {
-  padding: "8px 0",
+  //padding: "8px 0",
+  paddingBottom: 8,
 });
 const UserName = styled("div", {
   flex: 1,
+  flexShrink: 1,
   textShadow: "0 0 4px rgba(0,0,0,1)",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
 });
 
 const UserThumbnail = styled("div", {
@@ -47,6 +42,7 @@ const UserThumbnail = styled("div", {
   outlineStyle: "solid",
   outlineOffset: 2,
   outlineWidth: 2,
+  position: "relative",
 });
 
 const SwitchRoot = styled(Switch.Root, {
@@ -80,151 +76,135 @@ export default function MemberList() {
   const sync = useStore((state) => state.sync);
   const setSync = useStore((state) => state.setSync);
   const clearComments = useStore((state) => state.clearComments);
+  const comments = useStore((state) => state.comments);
+  const reactions = useStore((state) => state.reactions);
 
-  const edge = useStore((state) => state.edge);
   const setEdge = useStore((state) => state.setEdge);
   useControls({
     clear: button(clearComments),
     edge: { value: false, onChange: setEdge },
   });
   return (
-    <Container style={{ opacity: edge ? 0 : 1 }}>
-      <Face />
-      <div>メンバーリスト</div>
-      <UserList>
-        <UserListItems>
-          <UserThumbnail>
-            <Emoticon style={{ scale: "0.5" }} />
-          </UserThumbnail>
-          <UserName>ボディ</UserName>
-          <SwitchRoot
-            style={{ color: "gray" }}
-            checked={sync === "body"}
-            onCheckedChange={(checked) => {
-              setSync(checked ? "body" : null);
+    <UserList>
+      <UserListItems>
+        <UserThumbnail>
+          <Emoticon style={{ scale: "0.5" }} />
+        </UserThumbnail>
+        <UserName>ボディ</UserName>
+        <SwitchRoot
+          style={{ color: "gray" }}
+          checked={sync === "body"}
+          onCheckedChange={(checked) => {
+            setSync(checked ? "body" : null);
+          }}
+        >
+          <SwitchThumb />
+        </SwitchRoot>
+      </UserListItems>
+      {/* <Me /> */}
+      {others.map(({ connectionId, presence }) => {
+        const color = colors[connectionId % colors.length];
+
+        const comment = Object.entries(comments).findLast(
+          ([_, { to, from }]) => connectionId === from
+        );
+
+        const reaction = reactions.findLast((r) => r.id === connectionId);
+        //console.log(comment);
+
+        return (
+          true && ( //presence.name
+            <UserListItems
+              key={connectionId}
+              //onClick={() => setSelected(connectionId)}
+            >
+              <UserThumbnail
+                style={{
+                  outlineColor: color,
+                  outlineWidth: map(presence.mic, 0.15, 1, 2, 10),
+                }}
+                //scale: `${0.5 + )}`,
+              >
+                <Emoticon style={{ scale: "0.5" }} {...presence.face} />
+                {reaction && (
+                  <div
+                    style={{
+                      fontSize: 40,
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
+                  >
+                    {reaction.value}
+                  </div>
+                )}
+              </UserThumbnail>
+              <UserName style={{ color: color }}>
+                {presence.name || "名無し"}
+                {comment && (
+                  <div
+                    style={{
+                      fontSize: 14,
+                      color: "rgba(255,255,255,0.8)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {comment[1].text}
+                  </div>
+                )}
+              </UserName>
+              <SwitchRoot
+                style={{ color }}
+                checked={sync === connectionId}
+                onCheckedChange={(checked) => {
+                  setSync(checked ? connectionId : null);
+                }}
+              >
+                <SwitchThumb />
+              </SwitchRoot>
+            </UserListItems>
+          )
+        );
+      })}
+    </UserList>
+  );
+}
+
+function Me() {
+  const face = useStore((state) => state.face);
+  const name = useStore((state) => state.name);
+  const mic = useStore((state) => state.mic);
+  const myId = useMyId();
+  const speaking = useStore((state) => state.speaking);
+
+  return (
+    <UserListItems>
+      <UserThumbnail
+        style={{
+          outlineColor: colors[myId % colors.length],
+          outlineWidth: map(mic, 0.15, 1, 2, 10),
+        }}
+      >
+        <Emoticon style={{ scale: "0.5" }} {...face} />
+      </UserThumbnail>
+      <UserName style={{ color: colors[myId % colors.length] }}>
+        {name}
+        {speaking !== "" && (
+          <div
+            style={{
+              fontSize: 14,
+              color: "rgba(255,255,255,0.8)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
-            <SwitchThumb />
-          </SwitchRoot>
-        </UserListItems>
-        {others.map(({ connectionId, presence }) => {
-          const color = colors[connectionId % colors.length];
-          return (
-            true && ( //presence.name
-              <UserListItems
-                key={connectionId}
-                //onClick={() => setSelected(connectionId)}
-              >
-                <UserThumbnail
-                  style={{
-                    outlineColor: color,
-                    outlineWidth: map(presence.mic, 0.15, 1, 2, 10),
-                  }}
-                  //scale: `${0.5 + )}`,
-                >
-                  <Emoticon style={{ scale: "0.5" }} {...presence.face} />
-                </UserThumbnail>
-
-                <UserName style={{ color: color }}>
-                  {presence.name || "名無し"}
-                </UserName>
-                <SwitchRoot
-                  style={{ color }}
-                  checked={sync === connectionId}
-                  onCheckedChange={(checked) => {
-                    setSync(checked ? connectionId : null);
-                  }}
-                >
-                  <SwitchThumb />
-                </SwitchRoot>
-              </UserListItems>
-            )
-          );
-        })}
-      </UserList>
-      {/* <IndivisualChat /> */}
-      <Chat />
-    </Container>
-  );
-}
-
-function CommentForm({ onSubmit }) {
-  const [comment, setComment] = useState("");
-
-  return (
-    <form
-      onSubmit={(e) => {
-        onSubmit && onSubmit(comment);
-        setComment("");
-        e.preventDefault();
-      }}
-      style={{ display: "flex" }}
-    >
-      <input
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        placeholder="コメントを入力"
-        style={{ flex: 1 }}
-      />
-      <input disabled={!comment} type="submit" value="送信" />
-    </form>
-  );
-}
-
-function Chat() {
-  const addComment = useStore((state) => state.addComment);
-
-  const setSelected = useStore((state) => state.setSelected);
-  const selected = useStore((state) => state.selected);
-  const name = useStore((state) => state.name);
-
-  const myId = useMyId();
-
-  const comments = useStore((state) => state.comments);
-
-  const handleSubmit = (comment) => {
-    addComment({
-      name,
-      text: comment,
-      timestamp: Date.now().toString(),
-      from: myId,
-      to: selected ? selected : "*",
-    });
-  };
-
-  console.log(comments);
-  return (
-    <div
-      style={{
-        paddingTop: 24,
-        borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-      }}
-    >
-      <div>チャット</div>
-      {/* <button onClick={() => setSelected(null)}>←</button> */}
-      To：
-      {selected ? selected : "ALL"}
-      <div style={{ minHeight: 200 }}>
-        {Object.entries(comments)
-          .filter(([_, { to, from }]) =>
-            selected
-              ? (to === selected && from === myId) ||
-                (from === selected && to === myId)
-              : to === "*"
-          )
-          .map(([id, { name, text, from }]) => {
-            return (
-              <li key={id}>
-                <span style={{ color: colors[from % colors.length] }}>
-                  {name}
-                </span>
-                {" : "}
-                {text}
-              </li>
-            );
-          })}
-      </div>
-      <CommentForm onSubmit={handleSubmit} />
-    </div>
+            {speaking}
+          </div>
+        )}
+      </UserName>
+    </UserListItems>
   );
 }

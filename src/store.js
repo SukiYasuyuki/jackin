@@ -19,6 +19,8 @@ const useStore = create()(
         mouthWide: 1,
       },
       edge: false,
+      speaking: "",
+      setSpeaking: (speaking) => set({ speaking }),
       setEdge: (edge) => set({ edge }),
       setFace: (face) => set({ face }),
       setAngle: (angle) => set({ angle }),
@@ -41,12 +43,13 @@ const useStore = create()(
       setName: (name) => set({ name }),
       setMic: (mic) => set({ mic }),
       reactions: [],
-      addReaction: (reaction) =>
+      addReaction: (reaction, id) =>
         set((state) => ({
           reactions: [
             ...state.reactions,
             {
               value: reaction,
+              id,
               timestamp: Date.now(),
               point: { x: state.cursor.x, y: state.cursor.y },
             },
