@@ -5,6 +5,7 @@ import {
   useTexture,
   Sphere,
   Html,
+  PerspectiveCamera,
 } from "@react-three/drei";
 import { Suspense, Fragment, useEffect } from "react";
 import * as THREE from "three";
@@ -15,6 +16,7 @@ import colors from "./utils/colors";
 import { styled } from "@stitches/react";
 import Emoticon from "./components/Emoticon";
 import { map } from "./utils/math";
+import Attention from "./components/Attention";
 
 function Control() {
   const setAngle = useStore((state) => state.setAngle);
@@ -99,6 +101,7 @@ export function latlng2xyz(lat, lng, radius) {
 
 function Still() {
   const setCursor = useStore((state) => state.setCursor);
+  const addFov = useStore((state) => state.addFov);
   const setControlEnabled = useStore((state) => state.setControlEnabled);
   //const addFov = useLiveStore((state) => state.addFov);
 
@@ -134,7 +137,7 @@ function Still() {
         //setControlEnabled(true);
       }}
       */
-      //onWheel={(e) => addFov(e.wheelDelta * -0.01)} //e.wheelDelta
+      onWheel={(e) => addFov(e.wheelDelta * -0.01)}
     >
       <meshBasicMaterial toneMapped={false} side={THREE.BackSide} map={tex} />
     </Sphere>
@@ -194,11 +197,24 @@ function UI() {
     >
       {others.map(({ presence, connectionId, name }) => {
         if (!presence) return;
+        //console.log(presence.cursor, presence.angle);
         const pos = latlng2xyz(
           presence.cursor.azimuth,
           presence.cursor.polaris,
           400
         );
+
+        const angle = latlng2xyz(
+          (presence.angle.azimuth * 180) / Math.PI,
+          (presence.angle.polaris * 180) / Math.PI,
+          400
+        );
+
+        const angleProj = new THREE.Vector3(
+          angle[0],
+          angle[1],
+          angle[2]
+        ).project(camera);
 
         const projection = new THREE.Vector3(pos[0], pos[1], pos[2]).project(
           camera
@@ -256,14 +272,20 @@ function UI() {
           ([_, { to, from }]) => connectionId === from
         );
         const reaction = reactions.findLast((r) => r.id === connectionId);
-
         return (
           <Fragment key={connectionId}>
+            {presence.attention && (
+              <Attention
+                style={{
+                  top: `${-projection.y * 50 + 50}%`,
+                  left: `${projection.x * 50 + 50}%`,
+                  color,
+                }}
+              />
+            )}
             <svg
               style={{
                 position: "absolute",
-                left: 0,
-                top: 0,
                 top: `${-projection.y * 50 + 50}%`,
                 left: `${projection.x * 50 + 50}%`,
                 //transform: `translateX(${x}px) translateY(${y}px)`,
@@ -283,6 +305,7 @@ function UI() {
                 }}
               />
             </svg>
+
             {edge && (
               <EdgeCircle
                 style={{
@@ -403,13 +426,30 @@ const Label = styled("div", {
   },
 });
 
-export default function Scene(props) {
+function Camera() {
+  const fov = useStore((state) => state.fov);
+  return <PerspectiveCamera position={[0, 0, 0.001]} makeDefault fov={fov} />;
+}
+
+export default function Scene() {
+  const timer = useRef();
+  const setAttention = useStore((state) => state.setAttention);
+
   return (
-    <Canvas {...props}>
+    <Canvas
+      onDoubleClick={(e) => {
+        setAttention(true);
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => {
+          setAttention(false);
+        }, 1400);
+      }}
+    >
       <Suspense>
         <Still />
       </Suspense>
       <Control />
+      <Camera />
       {/* <Cursors /> */}
       <UI />
     </Canvas>

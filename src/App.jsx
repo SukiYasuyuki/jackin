@@ -25,7 +25,11 @@ import LongPressMenu from "./LongPressMenu";
 import Emoticon from "./components/Emoticon";
 import Voice from "./VoiceRecognition";
 import { PieContainer, Item } from "./Pie";
+import Attention from "./components/Attention";
 import FlyingReaction from "./components/FlyingReaction";
+import useMyId from "./hooks/useMyId";
+import colors from "./utils/colors";
+
 //import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 
 const App = () => {
@@ -113,6 +117,23 @@ function App2() {
 }
 */
 
+function MyAttention() {
+  const attention = useStore((state) => state.attention);
+  const mouse = useStore((state) => state.mouse);
+  const myId = useMyId();
+  return (
+    attention && (
+      <Attention
+        style={{
+          top: mouse.y,
+          left: mouse.x,
+          color: colors[myId % colors.length],
+        }}
+      />
+    )
+  );
+}
+
 function App2() {
   const {
     liveblocks: { enterRoom, leaveRoom },
@@ -126,18 +147,19 @@ function App2() {
   }, [enterRoom, leaveRoom]);
 
   const name = useStore((state) => state.name);
+  const setMouse = useStore((state) => state.setMouse);
 
   //useMic(setMic);
   return (
     <div
       style={{ width: "100vw", height: "100vh" }}
-
-      //onPointerMove={(e) => setCursor({ x: e.clientX, y: e.clientY })}
+      onPointerMove={(e) => setMouse({ x: e.clientX, y: e.clientY })}
     >
       <ConfigPanel />
       {!!name ? (
-        <div style={{ width: "100vw", height: "100vh" }}>
+        <div style={{ width: "100vw", height: "100vh", position: "fixed" }}>
           <Scene />
+          <MyAttention />
           <PlayerControl />
           <SidePanel />
           <Functions />

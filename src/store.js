@@ -6,6 +6,8 @@ const client = createClient({
   publicApiKey: "pk_test_KGSl5DlvcMuueaU8lavLFrtk",
 });
 
+const { max, min } = Math;
+
 const useStore = create()(
   liveblocks(
     (set) => ({
@@ -43,6 +45,11 @@ const useStore = create()(
       setName: (name) => set({ name }),
       setMic: (mic) => set({ mic }),
       reactions: [],
+      attention: false,
+      setAttention: (attention) => set({ attention }),
+      fov: 60,
+      addFov: (val) =>
+        set((state) => ({ fov: min(max(state.fov + val, 30), 120) })),
       addReaction: (reaction, id) =>
         set((state) => ({
           reactions: [
@@ -61,6 +68,8 @@ const useStore = create()(
             (reaction) => reaction.timestamp > Date.now() - 4000
           ),
         })),
+      mouse: { x: 0, y: 0 },
+      setMouse: (mouse) => set({ mouse }),
     }),
     {
       client,
@@ -70,6 +79,8 @@ const useStore = create()(
         mic: true,
         name: true,
         face: true,
+        fov: true,
+        attention: true,
       },
       storageMapping: {
         //sync: true,
