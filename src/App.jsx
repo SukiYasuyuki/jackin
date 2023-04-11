@@ -29,6 +29,11 @@ import Attention from "./components/Attention";
 import FlyingReaction from "./components/FlyingReaction";
 import useMyId from "./hooks/useMyId";
 import colors from "./utils/colors";
+import God from "./God";
+import Control from "./Control";
+
+import CommentForm from "./components/CommentForm";
+import { styled } from "@stitches/react";
 
 //import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 
@@ -148,8 +153,9 @@ function App2() {
 
   const name = useStore((state) => state.name);
   const setMouse = useStore((state) => state.setMouse);
+  const setMic = useStore((state) => state.setMic);
 
-  //useMic(setMic);
+  useMic(setMic);
   return (
     <div
       style={{ width: "100vw", height: "100vh" }}
@@ -160,9 +166,10 @@ function App2() {
         <div style={{ width: "100vw", height: "100vh", position: "fixed" }}>
           <Scene />
           <MyAttention />
-          <PlayerControl />
-          <SidePanel />
+          {/* <PlayerControl /> */}
+          {/* <SidePanel /> */}
           <Functions />
+          <Comment />
         </div>
       ) : (
         <LogIn />
@@ -239,3 +246,36 @@ const menuItems = [
 ];
 
 const sliceAngle = 360 / menuItems.length;
+
+function Comment() {
+  const stepback = useStore((state) => state.stepback);
+  const addComment = useStore((state) => state.addComment);
+  const name = useStore((state) => state.name);
+  const myId = useMyId();
+  const handleSubmit = (comment) => {
+    addComment({
+      name,
+      text: comment,
+      timestamp: Date.now().toString(),
+      from: myId,
+      to: "*",
+    });
+  };
+
+  return (
+    stepback && (
+      <CommentInput>
+        <CommentForm onSubmit={handleSubmit} />
+      </CommentInput>
+    )
+  );
+}
+const CommentInput = styled("div", {
+  position: "absolute",
+  bottom: 32,
+  backdropFilter: "blur(40px)",
+  width: 320,
+  left: "calc(50% - 160px)",
+  borderRadius: "12px",
+  overflow: "clip",
+});

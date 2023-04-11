@@ -1,0 +1,83 @@
+import {
+  Sphere,
+  Html,
+  PerspectiveCamera,
+  useHelper,
+  Decal,
+  useTexture,
+  Line,
+  Cone,
+} from "@react-three/drei";
+import { useRef } from "react";
+import * as THREE from "three";
+import { styled } from "@stitches/react";
+import useStore from "../store";
+import { Comment } from "../Scene";
+
+export const Label = styled("div", {
+  color: "black",
+  padding: "0px 4px",
+  translate: "0 30px",
+  fontSize: 12,
+  borderRadius: 4,
+});
+
+export default function Ghost({
+  color = "yellow",
+  name,
+  fov,
+  reaction,
+  comment,
+}) {
+  const ref = useRef();
+  //useHelper(ref, THREE.CameraHelper);
+  const texture = useTexture("/face.png");
+  const inner = useStore((state) => state.inner);
+  const size = useStore((state) => state.size);
+
+  return (
+    <group scale={size} position={[0, 0, -inner]}>
+      <Sphere args={[1]}>
+        <meshBasicMaterial color={color} toneMapped={false} />
+        <Decal
+          //debug // Makes "bounding box" of the decal visible
+          position={[0, 0, -1]} // Position of the decal
+          rotation={[0, 0, 0]} // Rotation of the decal (can be a vector or a degree in radians)
+          scale={1.5} // Scale of the decal
+        >
+          <meshBasicMaterial map={texture} transparent />
+        </Decal>
+        <PerspectiveCamera ref={ref} fov={fov} />
+        <Html center>
+          <Label css={{ background: color }}>{name}</Label>
+          {reaction && (
+            <div
+              style={{
+                fontSize: 48,
+                position: "absolute",
+                top: 0,
+                left: 0,
+              }}
+            >
+              {reaction.value}
+            </div>
+          )}
+          {comment && <Comment area={"bottom"}>{comment[1].text}</Comment>}
+        </Html>
+        <Line
+          points={[
+            [0, 0, -2],
+            [0, 0, -5],
+          ]}
+          color={color}
+          lineWidth={size}
+        >
+          <meshBasicMaterial color={color} toneMapped={false} />
+        </Line>
+        <Cone args={[0.3, 0.6]} position={[0, 0, -5]} rotation-x={-Math.PI / 2}>
+          <meshBasicMaterial color={color} toneMapped={false} />
+        </Cone>
+      </Sphere>
+    </group>
+  );
+}

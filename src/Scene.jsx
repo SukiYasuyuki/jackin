@@ -4,10 +4,15 @@ import {
   Box,
   useTexture,
   Sphere,
+  Icosahedron,
   Html,
   PerspectiveCamera,
+  CameraControls,
+  useHelper,
+  Environment,
+  Wireframe,
 } from "@react-three/drei";
-import { Suspense, Fragment, useEffect } from "react";
+import { Suspense, Fragment, useEffect, useState } from "react";
 import * as THREE from "three";
 import useStore from "./store";
 import { useRef } from "react";
@@ -17,6 +22,12 @@ import { styled } from "@stitches/react";
 import Emoticon from "./components/Emoticon";
 import { map } from "./utils/math";
 import Attention from "./components/Attention";
+import Rader from "./components/Rader";
+import Ghost, { Label as Label2 } from "./components/Ghost";
+
+import ProjectedMaterial from "./components/ProjectedMaterial";
+import useKeyPress from "./hooks/useKeyPress";
+import useMyId from "./hooks/useMyId";
 
 function Control() {
   const setAngle = useStore((state) => state.setAngle);
@@ -26,10 +37,22 @@ function Control() {
   const others = useStore((state) => state.liveblocks.others);
 
   const sync = useStore((state) => state.sync);
-  const { lock } = useControls({
-    lock: false,
-  });
 
+  /*
+  const { stepback } = useControls({
+    stepback: { value: 100, min: 10, max: 500 },
+  });
+  */
+
+  const stepback = useStore((state) => state.stepback);
+  const toggleStepback = useStore((state) => state.toggleStepback);
+
+  useKeyPress([" ", "b"], toggleStepback);
+  useEffect(() => {
+    controls.current?.dolly(stepback ? -100 : 100, true);
+  }, [stepback]);
+
+  /*
   useFrame(() => {
     if (!!sync) {
       const target = others.find(({ connectionId }) => connectionId === sync);
@@ -40,25 +63,47 @@ function Control() {
       }
     }
   });
+  */
+
+  const setDragging = useStore((state) => state.setDragging);
 
   return (
-    <OrbitControls
+    <CameraControls
+      makeDefault
+      onChange={({ target }) => {
+        //console.log(e.target.azimuthAngle, e.target.polarAngle);
+        setAngle({ azimuth: target.azimuthAngle, polaris: target.polarAngle });
+      }}
+      ref={controls}
+      //onUpdate={(e) => console.log(e)}
+      azimuthRotateSpeed={-0.2}
+      polarRotateSpeed={-0.2}
+      //smoothTime={0.1}
+      mouseButtons-wheel={0}
+      mouseButtons-right={0}
+      mouseButtons-middle={0}
+      mouseButtons-shiftLeft={0}
+      onStart={() => setDragging(true)}
+      onEnd={() => setDragging(false)}
+    />
+  );
+}
+
+/* <OrbitControls
       ref={controls}
       reverseOrbit
       enableZoom={false}
       onChange={({ target }) => {
         const azimuth = target.getAzimuthalAngle();
         const polaris = target.getPolarAngle();
+        console.log(azimuth, polaris);
         setAngle({ azimuth, polaris });
       }}
       enabled={controlEnabled}
       makeDefault
       enablePan={false}
       rotateSpeed={0.2}
-    />
-  );
-}
-
+    /> */
 const {
   sin,
   cos,
@@ -105,12 +150,13 @@ function Still() {
   const setControlEnabled = useStore((state) => state.setControlEnabled);
   //const addFov = useLiveStore((state) => state.addFov);
 
-  const tex = useTexture("/still3.jpg");
+  const tex = useTexture("/still4.jpg");
 
   useEffect(() => {}, []);
 
   const timer = useRef();
 
+  /*
   const start = (e) => {
     timer.current = setTimeout(() => {
       console.log("looong", e);
@@ -121,26 +167,136 @@ function Still() {
   const cancel = () => {
     clearTimeout(timer.current);
   };
+  */
+  const mat = useRef();
+
+  useFrame(({ scene }) => {
+    const camera = scene.getObjectByName("cam");
+    mat.current.viewMatrixCamera = camera.matrixWorldInverse.clone();
+    mat.current.projectionMatrixCamera = camera.projectionMatrix.clone();
+    mat.current.projPosition = camera.position.clone();
+  });
+
+  const ref = useRef();
+  useHelper(ref, THREE.CameraHelper);
+
+  const { rot } = useControls({
+    rot: { value: 0, min: 0, max: Math.PI * 2 },
+  });
+
   return (
-    <Sphere
-      args={[500, 60, 40]}
-      scale={[-1, 1, 1]}
-      rotation-y={-Math.PI / 2}
-      onPointerMove={(e) => {
-        setCursor(xyz2latlng(e.point));
-        //cancel();
-      }}
-      /*
-      onPointerDown={start}
-      onPointerUp={() => {
-        cancel();
-        //setControlEnabled(true);
-      }}
-      */
-      onWheel={(e) => addFov(e.wheelDelta * -0.01)}
-    >
-      <meshBasicMaterial toneMapped={false} side={THREE.BackSide} map={tex} />
-    </Sphere>
+    <>
+      <group rotation-y={-Math.PI / 2}>
+        <Sphere
+          args={[500, 64, 64]}
+          scale={[-1, 1, 1]}
+          onPointerMove={(e) => {
+            setCursor(xyz2latlng(e.point));
+            //cancel();
+          }}
+          /*
+    onPointerDown={start}
+    onPointerUp={() => {
+      cancel();
+      //setControlEnabled(true);
+    }}
+    */
+          onWheel={(e) => addFov(e.wheelDelta * -0.01)}
+        >
+          <projectedMaterial key={ProjectedMaterial.key} ref={mat} map={tex} />
+
+          {/* <meshBasicMaterial toneMapped={false} side={THREE.BackSide} map={tex} /> */}
+          {/* <Wire /> */}
+        </Sphere>
+      </group>
+    </>
+  );
+}
+
+function MyCamera() {
+  const { azimuth, polaris } = useStore((state) => state.angle);
+
+  const fov = useStore((state) => state.fov);
+
+  return (
+    <PerspectiveCamera
+      name="cam"
+      fov={fov}
+      //ref={ref}
+      //rotation-y={rot}
+      rotation={[polaris + Math.PI / 2, azimuth, 0]}
+      rotation-order="YXZ"
+    />
+  );
+}
+
+function MyGhost() {
+  const size = useStore((state) => state.size);
+  const myId = useMyId();
+  const color = colors[myId % colors.length];
+  const name = useStore((state) => state.name);
+  const reactions = useStore((state) => state.reactions);
+  const comments = useStore((state) => state.comments);
+  const comment = Object.entries(comments).findLast(
+    ([_, { to, from }]) => myId === from
+  );
+
+  const reaction = reactions.findLast((r) => r.id === myId);
+  const mic = useStore((state) => state.mic);
+
+  return (
+    <>
+      <Sphere args={[size + map(mic, 0.15, 1, 0, 1)]}>
+        <meshBasicMaterial color={color} toneMapped={false} />
+        <Html center>
+          <Label2 css={{ background: color }}>{name}</Label2>
+          {comment && <Comment area={"bottom"}>{comment[1].text}</Comment>}
+
+          {reaction && (
+            <div
+              style={{
+                fontSize: 48,
+                position: "absolute",
+                top: 0,
+                left: 0,
+              }}
+            >
+              {reaction.value}
+            </div>
+          )}
+        </Html>
+      </Sphere>
+    </>
+  );
+}
+
+function Wire() {
+  const props = useControls({
+    dash: true,
+    dashInvert: true,
+    thickness: { value: 0.01, min: 0, max: 1, step: 0.0001 },
+    dashRepeats: { value: 1, min: 0, max: 10 },
+    dashLength: { value: 0.1, min: 0.1, max: 1 },
+    colorBackfaces: true,
+    strokeOpacity: { value: 0.5, min: 0, max: 1 },
+    fillMix: { value: 1, min: 0, max: 1 },
+    fillOpacity: { value: 0, min: 0, max: 1 },
+  });
+
+  return (
+    <Wireframe
+      simplify={true} // Remove some edges from wireframes
+      //fill={"#00ff00"} // Color of the inside of the wireframe
+      //fillMix={1} // Mix between the base color and the Wireframe 'fill'. 0 = base; 1 = wireframe
+      //fillOpacity={0.01} // Opacity of the inner fill
+      stroke={"#ffffff"} // Color of the stroke
+      //strokeOpacity={0.5} // Opacity of the stroke
+      //colorBackfaces={false} // Whether to draw lines that are facing away from the camera
+      backfaceStroke={"#cccccc"} // Color of the lines that are facing away from the camera
+      squeeze={false} // Narrow the centers of each line segment
+      {...props}
+      strokeOpacity={1}
+    />
   );
 }
 
@@ -182,7 +338,7 @@ function UI() {
   const edge = useStore((state) => state.edge);
   const comments = useStore((state) => state.comments);
   const reactions = useStore((state) => state.reactions);
-
+  const showMouse = false;
   return (
     <Html
       fullscreen
@@ -283,28 +439,30 @@ function UI() {
                 }}
               />
             )}
-            <svg
-              style={{
-                position: "absolute",
-                top: `${-projection.y * 50 + 50}%`,
-                left: `${projection.x * 50 + 50}%`,
-                //transform: `translateX(${x}px) translateY(${y}px)`,
-              }}
-              width="24"
-              height="36"
-              viewBox="0 0 24 36"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z"
-                fill={color}
-                stroke="white"
+            {showMouse && (
+              <svg
                 style={{
-                  filter: "drop-shadow(0px 0px 4px rgb(0 0 0 / 0.4))",
+                  position: "absolute",
+                  top: `${-projection.y * 50 + 50}%`,
+                  left: `${projection.x * 50 + 50}%`,
+                  //transform: `translateX(${x}px) translateY(${y}px)`,
                 }}
-              />
-            </svg>
+                width="24"
+                height="36"
+                viewBox="0 0 24 36"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z"
+                  fill={color}
+                  stroke="white"
+                  style={{
+                    filter: "drop-shadow(0px 0px 4px rgb(0 0 0 / 0.4))",
+                  }}
+                />
+              </svg>
+            )}
 
             {edge && (
               <EdgeCircle
@@ -339,6 +497,7 @@ function UI() {
           </Fragment>
         );
       })}
+      {/* <Rader /> */}
     </Html>
   );
 }
@@ -374,7 +533,7 @@ const EdgeCircle = styled("div", {
   },
 });
 
-const Comment = styled("div", {
+export const Comment = styled("div", {
   position: "absolute",
   color: "black",
   background: "white",
@@ -431,6 +590,80 @@ function Camera() {
   return <PerspectiveCamera position={[0, 0, 0.001]} makeDefault fov={fov} />;
 }
 
+function OtherGhost() {
+  const others = useStore((state) => state.liveblocks.others);
+  const setInner = useStore((state) => state.setInner);
+  const setSize = useStore((state) => state.setSize);
+  const reactions = useStore((state) => state.reactions);
+  const comments = useStore((state) => state.comments);
+
+  useControls({
+    inner: { value: 40, min: 10, max: 50, onChange: setInner },
+    size: { value: 2, min: 1, max: 50, onChange: setSize },
+  });
+  return (
+    others.length > 0 &&
+    others.map(({ presence, connectionId }) => {
+      const reaction = reactions.findLast((r) => r.id === connectionId);
+      const comment = Object.entries(comments).findLast(
+        ([_, { to, from }]) => connectionId === from
+      );
+      return (
+        <group
+          key={connectionId}
+          rotation-order="YXZ"
+          rotation={[
+            presence.angle.polaris - Math.PI / 2,
+            presence.angle.azimuth,
+            0,
+          ]}
+        >
+          <Suspense fallback={null}>
+            <Ghost
+              color={colors[connectionId % colors.length]}
+              name={presence.name}
+              fov={presence.fov}
+              reaction={reaction}
+              comment={comment}
+            />
+          </Suspense>
+        </group>
+      );
+    })
+  );
+}
+
+function Grid() {
+  const inner = useStore((state) => state.inner);
+  const [grid, set] = useState(false);
+
+  useKeyPress("g", () => {
+    set((b) => !b);
+  });
+
+  return (
+    grid && (
+      <Sphere args={[inner, 24, 24]}>
+        <meshBasicMaterial />
+        <Wire />
+      </Sphere>
+    )
+  );
+}
+
+function Ghosts() {
+  const stepback = useStore((state) => state.stepback);
+
+  return (
+    stepback && (
+      <>
+        <OtherGhost />
+        <MyGhost />
+      </>
+    )
+  );
+}
+
 export default function Scene() {
   const timer = useRef();
   const setAttention = useStore((state) => state.setAttention);
@@ -444,13 +677,19 @@ export default function Scene() {
           setAttention(false);
         }, 1400);
       }}
+      //linear
     >
       <Suspense>
         <Still />
       </Suspense>
+      <Grid />
+      <Ghosts />
+      <MyCamera />
       <Control />
       <Camera />
+
       {/* <Cursors /> */}
+      {/*  */}
       <UI />
     </Canvas>
   );

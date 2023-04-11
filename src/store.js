@@ -12,7 +12,7 @@ const useStore = create()(
   liveblocks(
     (set) => ({
       cursor: { x: 0, y: 0 },
-      angle: { azimuth: 0, polaris: 0 },
+      angle: { azimuth: 0, polaris: Math.PI / 2 },
       face: {
         roll: 0,
         leftEyeOpen: 1,
@@ -70,6 +70,15 @@ const useStore = create()(
         })),
       mouse: { x: 0, y: 0 },
       setMouse: (mouse) => set({ mouse }),
+      dragging: false,
+      setDragging: (dragging) => set({ dragging }),
+      inner: 50,
+      setInner: (inner) => set({ inner }),
+      size: 2,
+      setSize: (size) => set({ size }),
+      stepback: false,
+      setStepback: (stepback) => set({ stepback }),
+      toggleStepback: () => set((state) => ({ stepback: !state.stepback })),
     }),
     {
       client,
