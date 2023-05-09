@@ -2,6 +2,8 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   OrbitControls,
   Box,
+  Cone,
+  RoundedBox,
   useTexture,
   Sphere,
   Icosahedron,
@@ -11,6 +13,9 @@ import {
   useHelper,
   Environment,
   Wireframe,
+  Line,
+  Edges,
+  Circle,
 } from "@react-three/drei";
 import { Suspense, Fragment, useEffect, useState } from "react";
 import * as THREE from "three";
@@ -246,8 +251,12 @@ function MyGhost() {
 
   return (
     <>
-      <Sphere args={[size + map(mic, 0.15, 1, 0, 1)]}>
-        <meshBasicMaterial color={color} toneMapped={false} />
+      <RoundedBox
+        args={[1, 1, 1]}
+        scale={size + map(mic, 0.15, 1, 0, 1)}
+        radius={0.25}
+      >
+        <meshStandardMaterial color={color} toneMapped={false} />
         <Html center>
           <Label2 css={{ background: color }}>{name}</Label2>
           {comment && <Comment area={"bottom"}>{comment[1].text}</Comment>}
@@ -265,7 +274,7 @@ function MyGhost() {
             </div>
           )}
         </Html>
-      </Sphere>
+      </RoundedBox>
     </>
   );
 }
@@ -338,7 +347,12 @@ function UI() {
   const edge = useStore((state) => state.edge);
   const comments = useStore((state) => state.comments);
   const reactions = useStore((state) => state.reactions);
-  const showMouse = false;
+
+  const [showMouse, set] = useState(false);
+
+  useKeyPress("c", () => {
+    set((b) => !b);
+  });
   return (
     <Html
       fullscreen
@@ -598,7 +612,7 @@ function OtherGhost() {
   const comments = useStore((state) => state.comments);
 
   useControls({
-    inner: { value: 40, min: 10, max: 50, onChange: setInner },
+    inner: { value: 45, min: 10, max: 60, onChange: setInner },
     size: { value: 2, min: 1, max: 50, onChange: setSize },
   });
   return (
@@ -623,6 +637,7 @@ function OtherGhost() {
               color={colors[connectionId % colors.length]}
               name={presence.name}
               fov={presence.fov}
+              mic={presence.mic}
               reaction={reaction}
               comment={comment}
             />
@@ -635,18 +650,65 @@ function OtherGhost() {
 
 function Grid() {
   const inner = useStore((state) => state.inner);
-  const [grid, set] = useState(false);
+  const [grid, set] = useState(true);
 
   useKeyPress("g", () => {
     set((b) => !b);
   });
 
+  const stepback = useStore((state) => state.stepback);
+
   return (
+    stepback &&
     grid && (
-      <Sphere args={[inner, 24, 24]}>
-        <meshBasicMaterial />
-        <Wire />
-      </Sphere>
+      <>
+        <Sphere args={[inner, 24, 24]}>
+          {/* <meshBasicMaterial /> */}
+          <Circle args={[inner]} rotation-x={-Math.PI / 2}>
+            <meshBasicMaterial
+              depthTest={false}
+              color="white"
+              transparent
+              opacity={0.1}
+              side={THREE.DoubleSide}
+            />
+          </Circle>
+          <Line
+            color={"white"}
+            points={[
+              [0, 0, inner],
+              [0, 0, -inner],
+            ]}
+            thickness={0.1}
+            opacity={0.2}
+            transparent
+            depthTest={false}
+          />
+          <Line
+            color={"white"}
+            points={[
+              [inner, 0, 0],
+              [-inner, 0, 0],
+            ]}
+            thickness={0.1}
+            opacity={0.2}
+            transparent
+            depthTest={false}
+          />
+          <Line
+            color={"white"}
+            points={[
+              [0, inner, 0],
+              [0, -inner, 0],
+            ]}
+            thickness={0.1}
+            opacity={0.2}
+            transparent
+            depthTest={false}
+          />
+          <Wire />
+        </Sphere>
+      </>
     )
   );
 }
@@ -679,6 +741,8 @@ export default function Scene() {
       }}
       //linear
     >
+      {/* <directionalLight /> */}
+      <Environment preset="city"></Environment>
       <Suspense>
         <Still />
       </Suspense>
