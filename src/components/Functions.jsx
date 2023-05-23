@@ -119,7 +119,13 @@ function Settings() {
                 onClick={() => setDisplayType("sphere2")}
               />
               <Tile label={"Observatory"} />
-              <Tile label={"Compass"} />
+              <Tile
+                label={"Compass"}
+                selected={displayType === "compass"}
+                onClick={() =>
+                  displayType !== "compass" && setDisplayType("compass")
+                }
+              />
             </Grid>
           </Section>
           {/* <Section>

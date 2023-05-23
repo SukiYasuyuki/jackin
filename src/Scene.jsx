@@ -548,7 +548,7 @@ function UI() {
           </Fragment>
         );
       })}
-      {/* <Rader /> */}
+      {displayType === "compass" && <Rader />}
     </Html>
   );
 }

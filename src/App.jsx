@@ -255,6 +255,7 @@ function Comment() {
   const stepback = useStore((state) => state.stepback);
   const addComment = useStore((state) => state.addComment);
   const name = useStore((state) => state.name);
+  const displayType = useStore((state) => state.displayType);
   const myId = useMyId();
   const handleSubmit = (comment) => {
     addComment({
@@ -267,6 +268,7 @@ function Comment() {
   };
 
   return (
+    (displayType === "sphere" || displayType === "sphere2") &&
     stepback && (
       <CommentInput>
         <CommentForm onSubmit={handleSubmit} />
