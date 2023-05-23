@@ -39,7 +39,7 @@ const Summary = styled("summary", {
 
 export default function SidePanel() {
   const edge = useStore((state) => state.edge);
-
+  const displayType = useStore((state) => state.displayType);
   return (
     <Container>
       <Details open>
@@ -62,7 +62,7 @@ export default function SidePanel() {
         </Summary>
         <Face />
       </Details>
-      {!edge && (
+      {displayType === "sidebar" && (
         <>
           <Details open>
             <Summary>

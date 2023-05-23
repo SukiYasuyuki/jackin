@@ -33,6 +33,9 @@ import Ghost, { Label as Label2 } from "./components/Ghost";
 import ProjectedMaterial from "./components/ProjectedMaterial";
 import useKeyPress from "./hooks/useKeyPress";
 import useMyId from "./hooks/useMyId";
+import { Model as Head } from "./Head";
+import Hud from "./Hud";
+import Flags from "./Flags";
 
 function Control() {
   const setAngle = useStore((state) => state.setAngle);
@@ -51,6 +54,7 @@ function Control() {
 
   const stepback = useStore((state) => state.stepback);
   const toggleStepback = useStore((state) => state.toggleStepback);
+  const displayType = useStore((state) => state.displayType);
 
   useKeyPress([" ", "b"], toggleStepback);
   useEffect(() => {
@@ -174,12 +178,15 @@ function Still() {
   };
   */
   const mat = useRef();
+  const displayType = useStore((state) => state.displayType);
 
   useFrame(({ scene }) => {
-    const camera = scene.getObjectByName("cam");
-    mat.current.viewMatrixCamera = camera.matrixWorldInverse.clone();
-    mat.current.projectionMatrixCamera = camera.projectionMatrix.clone();
-    mat.current.projPosition = camera.position.clone();
+    if (displayType === "sphere") {
+      const camera = scene.getObjectByName("cam");
+      mat.current.viewMatrixCamera = camera.matrixWorldInverse.clone();
+      mat.current.projectionMatrixCamera = camera.projectionMatrix.clone();
+      mat.current.projPosition = camera.position.clone();
+    }
   });
 
   const ref = useRef();
@@ -188,6 +195,9 @@ function Still() {
   const { rot } = useControls({
     rot: { value: 0, min: 0, max: Math.PI * 2 },
   });
+
+  const addFlag = useStore((state) => state.addFlag);
+  const myId = useMyId();
 
   return (
     <>
@@ -199,6 +209,10 @@ function Still() {
             setCursor(xyz2latlng(e.point));
             //cancel();
           }}
+          onDoubleClick={(e) => {
+            console.log(e);
+            addFlag(xyz2latlng(e.point), myId);
+          }}
           /*
     onPointerDown={start}
     onPointerUp={() => {
@@ -208,10 +222,19 @@ function Still() {
     */
           onWheel={(e) => addFov(e.wheelDelta * -0.01)}
         >
-          <projectedMaterial key={ProjectedMaterial.key} ref={mat} map={tex} />
-
-          {/* <meshBasicMaterial toneMapped={false} side={THREE.BackSide} map={tex} /> */}
-          {/* <Wire /> */}
+          {displayType === "sphere" ? (
+            <projectedMaterial
+              key={ProjectedMaterial.key}
+              ref={mat}
+              map={tex}
+            />
+          ) : (
+            <meshBasicMaterial
+              toneMapped={false}
+              side={THREE.BackSide}
+              map={tex}
+            />
+          )}
         </Sphere>
       </group>
     </>
@@ -251,30 +274,35 @@ function MyGhost() {
 
   return (
     <>
-      <RoundedBox
+      <Suspense fallback={null}>
+        <Head color={color} scale={size + map(mic, 0.15, 1, 0, 1)}>
+          <Html center>
+            <Label2 css={{ background: color }}>{name}</Label2>
+            {comment && <Comment area={"bottom"}>{comment[1].text}</Comment>}
+
+            {reaction && (
+              <div
+                style={{
+                  fontSize: 48,
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                }}
+              >
+                {reaction.value}
+              </div>
+            )}
+          </Html>
+        </Head>
+      </Suspense>
+      {/* <RoundedBox
         args={[1, 1, 1]}
         scale={size + map(mic, 0.15, 1, 0, 1)}
         radius={0.25}
       >
         <meshStandardMaterial color={color} toneMapped={false} />
-        <Html center>
-          <Label2 css={{ background: color }}>{name}</Label2>
-          {comment && <Comment area={"bottom"}>{comment[1].text}</Comment>}
-
-          {reaction && (
-            <div
-              style={{
-                fontSize: 48,
-                position: "absolute",
-                top: 0,
-                left: 0,
-              }}
-            >
-              {reaction.value}
-            </div>
-          )}
-        </Html>
-      </RoundedBox>
+        
+            </RoundedBox> */}
     </>
   );
 }
@@ -292,9 +320,17 @@ function Wire() {
     fillOpacity: { value: 0, min: 0, max: 1 },
   });
 
+  const [simplify, set] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      set(true);
+    }, 1);
+  }, []);
+
   return (
     <Wireframe
-      simplify={true} // Remove some edges from wireframes
+      simplify={simplify} // Remove some edges from wireframes
       //fill={"#00ff00"} // Color of the inside of the wireframe
       //fillMix={1} // Mix between the base color and the Wireframe 'fill'. 0 = base; 1 = wireframe
       //fillOpacity={0.01} // Opacity of the inner fill
@@ -344,7 +380,8 @@ function Cursors() {
 function UI() {
   const others = useStore((state) => state.liveblocks.others);
   const { camera } = useThree();
-  const edge = useStore((state) => state.edge);
+  //const edge = useStore((state) => state.edge);
+  const displayType = useStore((state) => state.displayType);
   const comments = useStore((state) => state.comments);
   const reactions = useStore((state) => state.reactions);
 
@@ -478,7 +515,7 @@ function UI() {
               </svg>
             )}
 
-            {edge && (
+            {displayType === "surround" && (
               <EdgeCircle
                 style={{
                   color,
@@ -672,6 +709,7 @@ function Grid() {
               opacity={0.1}
               side={THREE.DoubleSide}
             />
+            <Edges color="white" />
           </Circle>
           <Line
             color={"white"}
@@ -726,10 +764,23 @@ function Ghosts() {
   );
 }
 
+function Indicator() {
+  //const { hud } = useControls({ hud: false });
+  const displayType = useStore((state) => state.displayType);
+  const Wrapper = displayType === "sphere2" ? Hud : Fragment;
+  return (
+    <Wrapper>
+      <Environment preset="city"></Environment>
+      <Grid />
+      <Ghosts />
+    </Wrapper>
+  );
+}
+
 export default function Scene() {
   const timer = useRef();
   const setAttention = useStore((state) => state.setAttention);
-
+  const displayType = useStore((state) => state.displayType);
   return (
     <Canvas
       onDoubleClick={(e) => {
@@ -742,16 +793,16 @@ export default function Scene() {
       //linear
     >
       {/* <directionalLight /> */}
-      <Environment preset="city"></Environment>
       <Suspense>
         <Still />
       </Suspense>
-      <Grid />
-      <Ghosts />
+
       <MyCamera />
       <Control />
       <Camera />
 
+      {(displayType === "sphere" || displayType === "sphere2") && <Indicator />}
+      <Flags />
       {/* <Cursors /> */}
       {/*  */}
       <UI />

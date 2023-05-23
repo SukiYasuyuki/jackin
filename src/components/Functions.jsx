@@ -68,8 +68,13 @@ const Grid = styled("div", {
 });
 
 function Settings() {
+  /*
   const edge = useStore((state) => state.edge);
   const setEdge = useStore((state) => state.setEdge);
+  */
+  const displayType = useStore((state) => state.displayType);
+  const setDisplayType = useStore((state) => state.setDisplayType);
+
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
@@ -92,19 +97,32 @@ function Settings() {
             <SectionHeader>表示タイプ</SectionHeader>
             <Grid>
               <Tile
-                label={"サイドバー"}
-                selected={!edge}
-                onClick={() => setEdge(false)}
+                label={"Side Bar"}
+                selected={displayType === "sidebar"}
+                onClick={() => setDisplayType("sidebar")}
               />
               <Tile
-                label={"サラウンド"}
-                selected={edge}
-                onClick={() => setEdge(true)}
+                label={"Surround"}
+                selected={displayType === "surround"}
+                onClick={() => setDisplayType("surround")}
               />
-              <Tile label={"コンパス"} />
+              <Tile
+                label={"Sphere1"}
+                selected={displayType === "sphere"}
+                onClick={() =>
+                  displayType !== "sphere" && setDisplayType("sphere")
+                }
+              />
+              <Tile
+                label={"Sphere2"}
+                selected={displayType === "sphere2"}
+                onClick={() => setDisplayType("sphere2")}
+              />
+              <Tile label={"Observatory"} />
+              <Tile label={"Compass"} />
             </Grid>
           </Section>
-          <Section>
+          {/* <Section>
             <SectionHeader>レイアウト</SectionHeader>
             <Grid>
               <Tile label={"フローティング"} selected />
@@ -117,7 +135,7 @@ function Settings() {
               <Tile label={"他者のカーソル"} selected />
               <Tile label={"他者の視野"} />
             </Grid>
-          </Section>
+        </Section> */}
           <button>退出する</button>
         </Popover.Content>
       </Popover.Portal>

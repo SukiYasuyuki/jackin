@@ -143,7 +143,7 @@ export default function App() {
     const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
     analyserRef.current.getByteFrequencyData(dataArray);
     const volumeLevel = Math.max(...dataArray) / 255;
-    setMic(volumeLevel);
+    //setMic(volumeLevel);
     //if (callback) callback(volumeLevel);
     requestRef.current = requestAnimationFrame(loop);
   }, []);

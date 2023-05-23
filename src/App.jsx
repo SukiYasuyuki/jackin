@@ -34,6 +34,7 @@ import Control from "./Control";
 
 import CommentForm from "./components/CommentForm";
 import { styled } from "@stitches/react";
+import Test from "./Test";
 
 //import { LiveKitRoom, VideoConference } from "@livekit/components-react";
 
@@ -145,15 +146,16 @@ function App2() {
   } = useStore();
 
   useEffect(() => {
-    enterRoom("room-id");
+    enterRoom("room-id2");
     return () => {
-      leaveRoom("room-id");
+      leaveRoom("room-id2");
     };
   }, [enterRoom, leaveRoom]);
 
   const name = useStore((state) => state.name);
   const setMouse = useStore((state) => state.setMouse);
   const setMic = useStore((state) => state.setMic);
+  const displayType = useStore((state) => state.displayType);
 
   useMic(setMic);
   return (
@@ -167,7 +169,9 @@ function App2() {
           <Scene />
           <MyAttention />
           {/* <PlayerControl /> */}
-          {/* <SidePanel /> */}
+          {(displayType === "sidebar" || displayType === "surround") && (
+            <SidePanel />
+          )}
           <Functions />
           <Comment />
         </div>

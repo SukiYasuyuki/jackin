@@ -21,6 +21,8 @@ const useStore = create()(
         mouthWide: 1,
       },
       edge: false,
+      displayType: "sphere",
+      setDisplayType: (displayType) => set({ displayType }),
       speaking: "",
       setSpeaking: (speaking) => set({ speaking }),
       setEdge: (edge) => set({ edge }),
@@ -44,6 +46,25 @@ const useStore = create()(
       name: "",
       setName: (name) => set({ name }),
       setMic: (mic) => set({ mic }),
+
+      flags: [],
+      addFlag: (point, userId) =>
+        set((state) => ({
+          flags: [
+            ...state.flags,
+            {
+              id: Date.now().toString(),
+              userId,
+              point,
+            },
+          ],
+        })),
+      clearFlag: (id) =>
+        set((state) => ({
+          flags: state.flags.filter((flag) => flag.id !== id),
+        })),
+      clearFlags: () => set({ flags: [] }),
+
       reactions: [],
       attention: false,
       setAttention: (attention) => set({ attention }),
@@ -95,6 +116,7 @@ const useStore = create()(
         //sync: true,
         comments: true,
         reactions: true,
+        flags: true,
       },
     }
   )

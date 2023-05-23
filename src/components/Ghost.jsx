@@ -11,12 +11,13 @@ import {
   Line,
   Cone,
 } from "@react-three/drei";
-import { useRef } from "react";
+import { useRef, Suspense } from "react";
 import * as THREE from "three";
 import { styled } from "@stitches/react";
 import useStore from "../store";
 import { Comment } from "../Scene";
 import { map } from "../utils/math";
+import { Model as Head } from "../Head";
 
 export const Label = styled("div", {
   color: "black",
@@ -41,8 +42,8 @@ export default function Ghost({
   const inner = useStore((state) => state.inner);
   const size = useStore((state) => state.size);
   return (
-    <group scale={size} position={[0, 0, -inner]}>
-      <RoundedBox
+    <group scale={2} position={[0, 0, -inner]}>
+      {/* <RoundedBox
         args={[1, 1, 1]}
         radius={0.25}
         scale={1 + map(mic, 0.15, 1, 0, 1)}
@@ -73,20 +74,26 @@ export default function Ghost({
           )}
           {comment && <Comment area={"bottom"}>{comment[1].text}</Comment>}
         </Html>
-        {/* <Line
-          points={[
-            [0, 0, -2],
-            [0, 0, -5],
-          ]}
-          color={color}
-          lineWidth={size}
-        >
-          <meshBasicMaterial color={color} toneMapped={false} />
-        </Line>
-        <Cone args={[0.3, 0.6]} position={[0, 0, -5]} rotation-x={-Math.PI / 2}>
-          <meshBasicMaterial color={color} toneMapped={false} />
-        </Cone> */}
-      </RoundedBox>
+            </RoundedBox> */}
+      <Suspense fallback={null}>
+        <Head color={color} scale={1 + map(mic, 0.15, 1, 0, 1)} />
+        <Html center>
+          <Label css={{ background: color }}>{name}</Label>
+          {reaction && (
+            <div
+              style={{
+                fontSize: 48,
+                position: "absolute",
+                top: 0,
+                left: 0,
+              }}
+            >
+              {reaction.value}
+            </div>
+          )}
+          {comment && <Comment area={"bottom"}>{comment[1].text}</Comment>}
+        </Html>
+      </Suspense>
       <Cone
         args={[10, 10, 4]}
         position={[0, 0, -6]}
@@ -105,3 +112,17 @@ export default function Ghost({
     </group>
   );
 }
+
+/* <Line
+          points={[
+            [0, 0, -2],
+            [0, 0, -5],
+          ]}
+          color={color}
+          lineWidth={size}
+        >
+          <meshBasicMaterial color={color} toneMapped={false} />
+        </Line>
+        <Cone args={[0.3, 0.6]} position={[0, 0, -5]} rotation-x={-Math.PI / 2}>
+          <meshBasicMaterial color={color} toneMapped={false} />
+        </Cone> */
