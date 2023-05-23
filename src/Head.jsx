@@ -15,25 +15,25 @@ export function Model({ color, children, ...props }) {
         <meshStandardMaterial color={color} toneMapped={false} />
       </mesh>
       <mesh
-        geometry={nodes.Icosphere.geometry}
-        position={[-1.04, 0, 0]}
-        scale={-0.37}
+        geometry={nodes.Sphere.geometry}
+        position={[1, 0, -0.1]}
+        scale={-0.3}
       >
         <meshStandardMaterial color={color} toneMapped={false} />
       </mesh>
       <mesh
         geometry={nodes.Circle.geometry}
         material={materials["Material.001"]}
-        position={[-0.35, 0.16, -0.97]}
-        rotation={[Math.PI / 2, 0, 0]}
+        position={[-0.35, 0.16, -0.964]}
+        rotation={[Math.PI / 2, 0, -0.17]}
         scale={-0.15}
       />
       <mesh
         geometry={nodes.Circle001.geometry}
         material={materials["Material.002"]}
-        position={[0, -0.29, -0.97]}
+        position={[0, -0.23, -0.97]}
         rotation={[-Math.PI / 2, 0, 0]}
-        scale={0.17}
+        scale={0.2}
       />
 
       {children}
