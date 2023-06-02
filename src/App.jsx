@@ -236,7 +236,7 @@ function Pie() {
   );
 }
 
-export default App2;
+export default Stream;
 
 const menuItems = [
   { label: "👍", color: "#f00" },
