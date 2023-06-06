@@ -101,6 +101,8 @@ const useStore = create()(
       stepback: false,
       setStepback: (stepback) => set({ stepback }),
       toggleStepback: () => set((state) => ({ stepback: !state.stepback })),
+      pieMenuOpen: null,
+      setPieMenuOpen: (pieMenuOpen) => set({ pieMenuOpen }),
     }),
     {
       client,

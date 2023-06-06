@@ -37,7 +37,26 @@ const slideLeftAndFade = keyframes({
   "100%": { opacity: 1, transform: "translateX(0)" },
 });
 
-export const PieContainer = styled(DropdownMenu.Content, {
+export const PieContainer = styled("div", {
+  position: "absolute",
+  borderRadius: "50%",
+  overflow: "hidden",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  animationDuration: "4000ms",
+  animationTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+  willChange: "transform, opacity",
+  backdropFilter: "blur(20px)",
+  //background: "red",
+  '&[data-state="open"]': {
+    //scale: 1,
+    //animationName: slideDownAndFade,
+    //transform: "scale(1)",
+  },
+});
+
+const PieContainer2 = styled(DropdownMenu.Content, {
   position: "absolute",
   borderRadius: "50%",
   overflow: "hidden",
@@ -64,6 +83,7 @@ const Slice = styled("div", {
   right: "50%",
   transformOrigin: "right bottom",
   overflow: "hidden",
+  cursor: "pointer",
   "&:hover": {
     opacity: 0.4,
   },
@@ -208,7 +228,7 @@ const PieMenu = () => {
     <div {...longPressProps} style={{ width: "100vw", height: "100vh" }}>
       <DropdownMenu.Root open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenu.Portal>
-          <PieContainer
+          <PieContainer2
             css={{ width: radius * 2, height: radius * 2 }}
             style={{
               top: position.y - radius,
@@ -241,7 +261,7 @@ const PieMenu = () => {
                 borderRadius: "50%",
               }}
             ></div>
-          </PieContainer>
+          </PieContainer2>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
     </div>

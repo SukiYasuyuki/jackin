@@ -37,6 +37,7 @@ import { Model as Head } from "./Head";
 import Hud from "./Hud";
 import Flags from "./Flags";
 import Observatory from "./components/Observatory";
+import { PieContainer, Item } from "./Pie";
 
 function Control() {
   const setAngle = useStore((state) => state.setAngle);
@@ -76,9 +77,10 @@ function Control() {
   */
 
   const setDragging = useStore((state) => state.setDragging);
-
+  const pieMenuOpen = useStore((state) => state.pieMenuOpen);
   return (
     <CameraControls
+      enabled={!pieMenuOpen}
       makeDefault
       onChange={({ target }) => {
         //console.log(e.target.azimuthAngle, e.target.polarAngle);
@@ -211,16 +213,8 @@ function Still() {
             //cancel();
           }}
           onDoubleClick={(e) => {
-            console.log(e);
             addFlag(xyz2latlng(e.point), myId);
           }}
-          /*
-    onPointerDown={start}
-    onPointerUp={() => {
-      cancel();
-      //setControlEnabled(true);
-    }}
-    */
           onWheel={(e) => addFov(e.wheelDelta * -0.01)}
         >
           {displayType === "sphere" ? (
@@ -780,36 +774,132 @@ function Indicator() {
   );
 }
 
+const radius = 120;
+const innerRadius = 30;
+const menuItems = [
+  //{ label: "📍", color: "#f00" },
+
+  { label: "👍", color: "#f00" },
+  { label: "🔥", color: "#0f0" },
+  { label: "😍", color: "#00f" },
+  { label: "👀", color: "#ff0" },
+  { label: "😱", color: "#0ff" },
+  { label: "🙁", color: "#f00" },
+  //{ label: "Item 6", color: "#f0f" },
+  //{ label: "Item 7", color: "#0f0" },
+];
+const sliceAngle = 360 / menuItems.length;
+
 export default function Scene() {
   const timer = useRef();
   const setAttention = useStore((state) => state.setAttention);
   const displayType = useStore((state) => state.displayType);
+
+  const pieMenuOpen = useStore((state) => state.pieMenuOpen);
+  const setPieMenuOpen = useStore((state) => state.setPieMenuOpen);
+  const addReaction = useStore((state) => state.addReaction);
+  const myId = useMyId();
+
+  const handleMouseDown = (event) => {
+    const timeoutId = setTimeout(() => {
+      setPieMenuOpen({ x: event.clientX, y: event.clientY });
+    }, 250);
+
+    const handleMouseUp = () => {
+      clearTimeout(timeoutId);
+    };
+
+    const handleMouseMove = () => {
+      clearTimeout(timeoutId);
+    };
+
+    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseUp);
+      document.removeEventListener("mouseup", handleMouseUp);
+      clearTimeout(timeoutId);
+    };
+  };
   return (
-    <Canvas
-      onDoubleClick={(e) => {
-        setAttention(true);
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => {
-          setAttention(false);
-        }, 1400);
-      }}
-      //linear
-    >
-      {/* <directionalLight /> */}
-      <Suspense>
-        <Still />
-      </Suspense>
+    <>
+      <Canvas
+        onDoubleClick={(e) => {
+          setAttention(true);
+          if (timer.current) clearTimeout(timer.current);
+          timer.current = setTimeout(() => {
+            setAttention(false);
+          }, 1400);
+        }}
+        //linear
+        onMouseDown={handleMouseDown}
+      >
+        {/* <directionalLight /> */}
+        <Suspense>
+          <Still />
+        </Suspense>
 
-      <MyCamera />
-      <Control />
-      <Camera />
+        <MyCamera />
+        <Control />
+        <Camera />
 
-      {(displayType === "sphere" || displayType === "sphere2") && <Indicator />}
-      <Flags />
-      {/* <Cursors /> */}
-      {/*  */}
-      <UI />
-      {displayType === "observatory" && <Observatory />}
-    </Canvas>
+        {(displayType === "sphere" || displayType === "sphere2") && (
+          <Indicator />
+        )}
+        <Flags />
+        {/* <Cursors /> */}
+        {/*  */}
+        {displayType === "observatory" && <Observatory />}
+
+        <UI />
+      </Canvas>
+      {!!pieMenuOpen && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999,
+          }}
+          onClick={(e) => setPieMenuOpen(null)}
+          //onMouseUp={(e) => set(false)}
+        >
+          <PieContainer
+            css={{ width: radius * 2, height: radius * 2 }}
+            style={{
+              top: pieMenuOpen.y - radius,
+              left: pieMenuOpen.x - radius,
+            }}
+          >
+            {menuItems.map((item, index) => (
+              <Item
+                key={index}
+                index={index}
+                innerRadius={innerRadius}
+                radius={radius}
+                sliceAngle={sliceAngle}
+                //onClick={() => console.log(index)}
+                onClick={() => addReaction(item.label, myId)}
+              >
+                <div style={{ fontSize: 24 }}>{item.label}</div>
+              </Item>
+            ))}
+            <div
+              //onClick={closeMenu}
+              style={{
+                width: innerRadius * 2,
+                height: innerRadius * 2,
+                //background: "red",
+                position: "absolute",
+                borderRadius: "50%",
+              }}
+            ></div>
+          </PieContainer>
+        </div>
+      )}
+    </>
   );
 }
