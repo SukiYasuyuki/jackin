@@ -103,6 +103,9 @@ const useStore = create()(
       toggleStepback: () => set((state) => ({ stepback: !state.stepback })),
       pieMenuOpen: null,
       setPieMenuOpen: (pieMenuOpen) => set({ pieMenuOpen }),
+      playing: false,
+      play: () => set({ playing: true }),
+      pause: () => set({ playing: false }),
     }),
     {
       client,
@@ -120,6 +123,7 @@ const useStore = create()(
         comments: true,
         reactions: true,
         flags: true,
+        playing: true,
       },
     }
   )

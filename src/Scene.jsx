@@ -21,7 +21,7 @@ import { Suspense, Fragment, useEffect, useState } from "react";
 import * as THREE from "three";
 import useStore from "./store";
 import { useRef } from "react";
-import { useControls } from "leva";
+import { useControls, button } from "leva";
 import colors from "./utils/colors";
 import { styled } from "@stitches/react";
 import Emoticon from "./components/Emoticon";
@@ -38,6 +38,7 @@ import Hud from "./Hud";
 import Flags from "./Flags";
 import Observatory from "./components/Observatory";
 import { PieContainer, Item } from "./Pie";
+import Hls from "hls.js";
 
 function Control() {
   const setAngle = useStore((state) => state.setAngle);
@@ -156,30 +157,59 @@ export function latlng2xyz(lat, lng, radius) {
   return [x, y, z];
 }
 
-function Still() {
+function Still({
+  url = "https://stream.mux.com/jP9GUNj2U2rgfuCVwDoYwbpq2zjNA7inJKqEDGO6A5A.m3u8",
+}) {
   const setCursor = useStore((state) => state.setCursor);
   const addFov = useStore((state) => state.addFov);
   const setControlEnabled = useStore((state) => state.setControlEnabled);
   //const addFov = useLiveStore((state) => state.addFov);
 
-  const tex = useTexture("/still4.jpg");
+  //const tex = useTexture("/still4.jpg");
 
   useEffect(() => {}, []);
 
   const timer = useRef();
 
-  /*
-  const start = (e) => {
-    timer.current = setTimeout(() => {
-      console.log("looong", e);
-      setControlEnabled(false);
-    }, 300);
-  };
+  const video = useRef(document.createElement("video"));
+  video.current.muted = false;
+  video.current.playsInline = true;
 
-  const cancel = () => {
-    clearTimeout(timer.current);
-  };
-  */
+  const playing = useStore((state) => state.playing);
+  const play = useStore((state) => state.play);
+  const pause = useStore((state) => state.pause);
+
+  useControls({
+    play: button(play),
+    pause: button(pause),
+  });
+
+  useEffect(() => {
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video.current);
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        //video.current.play();
+        video.current.addEventListener("loadedmetadata", function () {
+          console.log(video.current.duration);
+        });
+        //video.current.addEventListener("timeupdate", handleTimeUpdate);
+      });
+    }
+  }, [url]);
+
+  useEffect(() => {
+    if (playing) {
+      video.current.play();
+    } else {
+      video.current.pause();
+    }
+  }, [playing]);
+
+  const tex = new THREE.VideoTexture(video.current);
+  tex.needsUpdate = true;
+
   const mat = useRef();
   const displayType = useStore((state) => state.displayType);
 
