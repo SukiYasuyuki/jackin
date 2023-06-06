@@ -172,8 +172,9 @@ function Still({
   const timer = useRef();
 
   const video = useRef(document.createElement("video"));
-  video.current.muted = true;
   video.current.playsInline = true;
+  video.current.muted = false;
+  video.current.volume = 0.5;
 
   const playing = useStore((state) => state.playing);
   const play = useStore((state) => state.play);
@@ -202,8 +203,6 @@ function Still({
   useEffect(() => {
     if (playing) {
       video.current.play();
-      video.current.muted = false;
-      video.current.volume = 0.5;
     } else {
       video.current.pause();
     }
