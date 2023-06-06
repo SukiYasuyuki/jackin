@@ -4,7 +4,7 @@ import { liveblocks } from "@liveblocks/zustand";
 
 const client = createClient({
   publicApiKey: "pk_test_KGSl5DlvcMuueaU8lavLFrtk",
-  throttle: 16,
+  //throttle: 16,
 });
 
 const { max, min } = Math;
