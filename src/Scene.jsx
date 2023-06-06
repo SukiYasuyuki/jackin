@@ -36,6 +36,7 @@ import useMyId from "./hooks/useMyId";
 import { Model as Head } from "./Head";
 import Hud from "./Hud";
 import Flags from "./Flags";
+import Observatory from "./components/Observatory";
 
 function Control() {
   const setAngle = useStore((state) => state.setAngle);
@@ -402,152 +403,154 @@ function UI() {
       }}
       zIndexRange={[1, 0]}
     >
-      {others.map(({ presence, connectionId, name }) => {
-        if (!presence) return;
-        //console.log(presence.cursor, presence.angle);
-        const pos = latlng2xyz(
-          presence.cursor.azimuth,
-          presence.cursor.polaris,
-          400
-        );
+      {others &&
+        others.length > 0 &&
+        others.map(({ presence, connectionId, name }) => {
+          if (!presence) return;
+          //console.log(presence.cursor, presence.angle);
+          const pos = latlng2xyz(
+            presence.cursor.azimuth,
+            presence.cursor.polaris,
+            400
+          );
 
-        const angle = latlng2xyz(
-          (presence.angle.azimuth * 180) / Math.PI,
-          (presence.angle.polaris * 180) / Math.PI,
-          400
-        );
+          const angle = latlng2xyz(
+            (presence.angle.azimuth * 180) / Math.PI,
+            (presence.angle.polaris * 180) / Math.PI,
+            400
+          );
 
-        const angleProj = new THREE.Vector3(
-          angle[0],
-          angle[1],
-          angle[2]
-        ).project(camera);
+          const angleProj = new THREE.Vector3(
+            angle[0],
+            angle[1],
+            angle[2]
+          ).project(camera);
 
-        const projection = new THREE.Vector3(pos[0], pos[1], pos[2]).project(
-          camera
-        );
-        const dot = camera.position
-          .clone()
-          .normalize()
-          .dot(new THREE.Vector3(pos[0], pos[1], pos[2]).normalize());
+          const projection = new THREE.Vector3(pos[0], pos[1], pos[2]).project(
+            camera
+          );
+          const dot = camera.position
+            .clone()
+            .normalize()
+            .dot(new THREE.Vector3(pos[0], pos[1], pos[2]).normalize());
 
-        const p = {
-          x: dot < 0 ? projection.x : -projection.x,
-          y: dot < 0 ? projection.y : -projection.y,
-        };
+          const p = {
+            x: dot < 0 ? projection.x : -projection.x,
+            y: dot < 0 ? projection.y : -projection.y,
+          };
 
-        const area =
-          abs(p.x) < abs(p.y)
-            ? p.y > 0
-              ? "top"
-              : "bottom"
-            : p.x > 0
-            ? "right"
-            : "left";
+          const area =
+            abs(p.x) < abs(p.y)
+              ? p.y > 0
+                ? "top"
+                : "bottom"
+              : p.x > 0
+              ? "right"
+              : "left";
 
-        let extended, x, y;
-        switch (area) {
-          case "top":
-            y = 1;
-            x = (p.x / p.y) * y;
-            extended = { x, y };
-            break;
-          case "bottom":
-            y = -1;
-            x = (p.x / p.y) * y;
-            extended = { x, y };
-            break;
-          case "left":
-            x = -1;
-            y = (p.y / p.x) * x;
-            extended = { x, y };
-            break;
-          case "right":
-            x = 1;
-            y = (p.y / p.x) * x;
-            extended = { x, y };
-            break;
-          default:
-            break;
-        }
+          let extended, x, y;
+          switch (area) {
+            case "top":
+              y = 1;
+              x = (p.x / p.y) * y;
+              extended = { x, y };
+              break;
+            case "bottom":
+              y = -1;
+              x = (p.x / p.y) * y;
+              extended = { x, y };
+              break;
+            case "left":
+              x = -1;
+              y = (p.y / p.x) * x;
+              extended = { x, y };
+              break;
+            case "right":
+              x = 1;
+              y = (p.y / p.x) * x;
+              extended = { x, y };
+              break;
+            default:
+              break;
+          }
 
-        //console.log(extended);
+          //console.log(extended);
 
-        const color = colors[connectionId % colors.length];
+          const color = colors[connectionId % colors.length];
 
-        const comment = Object.entries(comments).findLast(
-          ([_, { to, from }]) => connectionId === from
-        );
-        const reaction = reactions.findLast((r) => r.id === connectionId);
-        return (
-          <Fragment key={connectionId}>
-            {presence.attention && (
-              <Attention
-                style={{
-                  top: `${-projection.y * 50 + 50}%`,
-                  left: `${projection.x * 50 + 50}%`,
-                  color,
-                }}
-              />
-            )}
-            {showMouse && (
-              <svg
-                style={{
-                  position: "absolute",
-                  top: `${-projection.y * 50 + 50}%`,
-                  left: `${projection.x * 50 + 50}%`,
-                  //transform: `translateX(${x}px) translateY(${y}px)`,
-                }}
-                width="24"
-                height="36"
-                viewBox="0 0 24 36"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z"
-                  fill={color}
-                  stroke="white"
+          const comment = Object.entries(comments).findLast(
+            ([_, { to, from }]) => connectionId === from
+          );
+          const reaction = reactions.findLast((r) => r.id === connectionId);
+          return (
+            <Fragment key={connectionId}>
+              {presence.attention && (
+                <Attention
                   style={{
-                    filter: "drop-shadow(0px 0px 4px rgb(0 0 0 / 0.4))",
+                    top: `${-projection.y * 50 + 50}%`,
+                    left: `${projection.x * 50 + 50}%`,
+                    color,
                   }}
                 />
-              </svg>
-            )}
-
-            {displayType === "surround" && (
-              <EdgeCircle
-                style={{
-                  color,
-
-                  top: `${-extended.y * 50 + 50}%`,
-                  left: `${extended.x * 50 + 50}%`,
-                  outlineWidth: map(presence.mic, 0.15, 1, 4, 12),
-                }}
-                area={area}
-              >
-                <Emoticon {...presence.face} />
-                <Label area={area} style={{ background: color }}>
-                  {presence.name}
-                </Label>
-                {comment && <Comment area={area}>{comment[1].text}</Comment>}
-                {reaction && (
-                  <div
+              )}
+              {showMouse && (
+                <svg
+                  style={{
+                    position: "absolute",
+                    top: `${-projection.y * 50 + 50}%`,
+                    left: `${projection.x * 50 + 50}%`,
+                    //transform: `translateX(${x}px) translateY(${y}px)`,
+                  }}
+                  width="24"
+                  height="36"
+                  viewBox="0 0 24 36"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M5.65376 12.3673H5.46026L5.31717 12.4976L0.500002 16.8829L0.500002 1.19841L11.7841 12.3673H5.65376Z"
+                    fill={color}
+                    stroke="white"
                     style={{
-                      fontSize: 64,
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
+                      filter: "drop-shadow(0px 0px 4px rgb(0 0 0 / 0.4))",
                     }}
-                  >
-                    {reaction.value}
-                  </div>
-                )}
-              </EdgeCircle>
-            )}
-          </Fragment>
-        );
-      })}
+                  />
+                </svg>
+              )}
+
+              {displayType === "surround" && (
+                <EdgeCircle
+                  style={{
+                    color,
+
+                    top: `${-extended.y * 50 + 50}%`,
+                    left: `${extended.x * 50 + 50}%`,
+                    outlineWidth: map(presence.mic, 0.15, 1, 4, 12),
+                  }}
+                  area={area}
+                >
+                  <Emoticon {...presence.face} />
+                  <Label area={area} style={{ background: color }}>
+                    {presence.name}
+                  </Label>
+                  {comment && <Comment area={area}>{comment[1].text}</Comment>}
+                  {reaction && (
+                    <div
+                      style={{
+                        fontSize: 64,
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                      }}
+                    >
+                      {reaction.value}
+                    </div>
+                  )}
+                </EdgeCircle>
+              )}
+            </Fragment>
+          );
+        })}
       {displayType === "compass" && <Rader />}
     </Html>
   );
@@ -806,6 +809,7 @@ export default function Scene() {
       {/* <Cursors /> */}
       {/*  */}
       <UI />
+      {displayType === "observatory" && <Observatory />}
     </Canvas>
   );
 }

@@ -146,9 +146,9 @@ function App2() {
   } = useStore();
 
   useEffect(() => {
-    enterRoom("room-id2");
+    enterRoom("room-id3");
     return () => {
-      leaveRoom("room-id2");
+      leaveRoom("room-id3");
     };
   }, [enterRoom, leaveRoom]);
 
@@ -236,7 +236,7 @@ function Pie() {
   );
 }
 
-export default Stream;
+export default App2;
 
 const menuItems = [
   { label: "👍", color: "#f00" },
@@ -268,7 +268,9 @@ function Comment() {
   };
 
   return (
-    (displayType === "sphere" || displayType === "sphere2") &&
+    (displayType === "sphere" ||
+      displayType === "sphere2" ||
+      displayType === "observatory") &&
     stepback && (
       <CommentInput>
         <CommentForm onSubmit={handleSubmit} />

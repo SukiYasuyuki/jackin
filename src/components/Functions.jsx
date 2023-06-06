@@ -118,7 +118,11 @@ function Settings() {
                 selected={displayType === "sphere2"}
                 onClick={() => setDisplayType("sphere2")}
               />
-              <Tile label={"Observatory"} />
+              <Tile
+                label={"Observatory"}
+                selected={displayType === "observatory"}
+                onClick={() => setDisplayType("observatory")}
+              />
               <Tile
                 label={"Compass"}
                 selected={displayType === "compass"}
