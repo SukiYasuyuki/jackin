@@ -39,6 +39,7 @@ import Flags from "./Flags";
 import Observatory from "./components/Observatory";
 import { PieContainer, Item } from "./Pie";
 import Hls from "hls.js";
+import { Perf } from "r3f-perf";
 
 function Control() {
   const setAngle = useStore((state) => state.setAngle);
@@ -167,8 +168,6 @@ function Still({
 
   //const tex = useTexture("/still4.jpg");
 
-  useEffect(() => {}, []);
-
   const timer = useRef();
 
   const video = useRef(document.createElement("video"));
@@ -208,8 +207,8 @@ function Still({
     }
   }, [playing]);
 
-  const tex = new THREE.VideoTexture(video.current);
-  tex.needsUpdate = true;
+  const tex = useRef(new THREE.VideoTexture(video.current));
+  tex.current.needsUpdate = true;
 
   const mat = useRef();
   const displayType = useStore((state) => state.displayType);
@@ -252,13 +251,13 @@ function Still({
             <projectedMaterial
               key={ProjectedMaterial.key}
               ref={mat}
-              map={tex}
+              map={tex.current}
             />
           ) : (
             <meshBasicMaterial
               toneMapped={false}
               side={THREE.BackSide}
-              map={tex}
+              map={tex.current}
             />
           )}
         </Sphere>
