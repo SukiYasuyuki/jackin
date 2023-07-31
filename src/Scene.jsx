@@ -35,7 +35,7 @@ import useKeyPress from "./hooks/useKeyPress";
 import useMyId from "./hooks/useMyId";
 import { Model as Head } from "./Head";
 import Hud from "./Hud";
-import Flags from "./Flags";
+//import Flags from "./Flags";
 import Observatory from "./components/Observatory";
 import { PieContainer, Item } from "./Pie";
 import Hls from "hls.js";
@@ -242,9 +242,11 @@ function Still({
             setCursor(xyz2latlng(e.point));
             //cancel();
           }}
+          /*
           onDoubleClick={(e) => {
             addFlag(xyz2latlng(e.point), myId);
           }}
+          */
           onWheel={(e) => addFov(e.wheelDelta * -0.01)}
         >
           {displayType === "sphere" ? (
@@ -877,7 +879,6 @@ export default function Scene() {
         {(displayType === "sphere" || displayType === "sphere2") && (
           <Indicator />
         )}
-        <Flags />
         {/* <Cursors /> */}
         {/*  */}
         {displayType === "observatory" && <Observatory />}
