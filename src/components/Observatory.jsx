@@ -10,6 +10,7 @@ import { map } from "../utils/math";
 export default function Dock() {
   const { width, height } = useThree((state) => state.viewport);
   const size = useThree((state) => state.size);
+  const displayType = useStore((state) => state.displayType);
 
   //console.log(width, height, size);
 
@@ -26,87 +27,89 @@ export default function Dock() {
   );
 
   return (
-    <Hud renderPriority={1}>
-      <Environment preset="city"></Environment>
+    displayType === "observatory" && (
+      <Hud renderPriority={1}>
+        <Environment preset="city"></Environment>
 
-      <OrthographicCamera position={[0, 0, 100]} makeDefault zoom={1} />
-      <group
-        //ref={mesh}
-        position={[0, -size.height / 2 + 150, 0]}
-      >
-        <group scale={50}>
-          <Head
-            color={colors[myId % colors.length]}
-            //scale={0.4}
-            scale={map(mic, 0.15, 1, 0.4, 0.5)}
-            rotation={[Math.PI / 12, 0, 0]}
-            rotation-order="YXZ"
-            position-y={map(mic, 0.15, 1, 0, 0.1)}
-          >
-            <Html center>
-              <Name style={{ color: colors[myId % colors.length] }}>
-                {name}
-              </Name>
-              {comment && <Comment>{comment[1].text}</Comment>}
-              {reaction && (
-                <div
-                  style={{
-                    fontSize: 48,
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                  }}
+        <OrthographicCamera position={[0, 0, 100]} makeDefault zoom={1} />
+        <group
+          //ref={mesh}
+          position={[0, -size.height / 2 + 150, 0]}
+        >
+          <group scale={50}>
+            <Head
+              color={colors[myId % colors.length]}
+              //scale={0.4}
+              scale={map(mic, 0.15, 1, 0.4, 0.5)}
+              rotation={[Math.PI / 12, 0, 0]}
+              rotation-order="YXZ"
+              position-y={map(mic, 0.15, 1, 0, 0.1)}
+            >
+              <Html center>
+                <Name style={{ color: colors[myId % colors.length] }}>
+                  {name}
+                </Name>
+                {comment && <Comment>{comment[1].text}</Comment>}
+                {reaction && (
+                  <div
+                    style={{
+                      fontSize: 48,
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
+                  >
+                    {reaction.value}
+                  </div>
+                )}
+              </Html>
+            </Head>
+            {others.map(({ presence, connectionId, name }, i) => {
+              const x = (Math.floor(i / 2) + 1) * (i % 2 ? 1 : -1) * 2.5;
+              const color = colors[connectionId % colors.length];
+              const rx = presence.angle.polaris - angle.polaris;
+              const ry = presence.angle.azimuth - angle.azimuth;
+              const reaction = reactions.findLast((r) => r.id === connectionId);
+              const comment = Object.entries(comments).findLast(
+                ([_, { to, from }]) => connectionId === from
+              );
+              return (
+                <Head
+                  //scale={0.4}
+                  scale={map(presence.mic, 0.15, 1, 0.4, 0.5)}
+                  color={color}
+                  position-x={x}
+                  position-y={map(presence.mic, 0.15, 1, 0, 0.1)}
+                  key={connectionId}
+                  rotation-order="YXZ"
+                  rotation={[rx + Math.PI / 12, ry, 0]}
                 >
-                  {reaction.value}
-                </div>
-              )}
-            </Html>
-          </Head>
-          {others.map(({ presence, connectionId, name }, i) => {
-            const x = (Math.floor(i / 2) + 1) * (i % 2 ? 1 : -1) * 2.5;
-            const color = colors[connectionId % colors.length];
-            const rx = presence.angle.polaris - angle.polaris;
-            const ry = presence.angle.azimuth - angle.azimuth;
-            const reaction = reactions.findLast((r) => r.id === connectionId);
-            const comment = Object.entries(comments).findLast(
-              ([_, { to, from }]) => connectionId === from
-            );
-            return (
-              <Head
-                //scale={0.4}
-                scale={map(presence.mic, 0.15, 1, 0.4, 0.5)}
-                color={color}
-                position-x={x}
-                position-y={map(presence.mic, 0.15, 1, 0, 0.1)}
-                key={connectionId}
-                rotation-order="YXZ"
-                rotation={[rx + Math.PI / 12, ry, 0]}
-              >
-                <Html center>
-                  <Name style={{ color }}>{presence.name}</Name>
-                  {comment && <Comment>{comment[1].text}</Comment>}
-                  {reaction && (
-                    <div
-                      style={{
-                        fontSize: 48,
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                      }}
-                    >
-                      {reaction.value}
-                    </div>
-                  )}
-                </Html>
-              </Head>
-            );
-          })}
-          {/* <Plane args={[10]} rotation-x={-Math.PI / 2 + 0.01}>
+                  <Html center>
+                    <Name style={{ color }}>{presence.name}</Name>
+                    {comment && <Comment>{comment[1].text}</Comment>}
+                    {reaction && (
+                      <div
+                        style={{
+                          fontSize: 48,
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                        }}
+                      >
+                        {reaction.value}
+                      </div>
+                    )}
+                  </Html>
+                </Head>
+              );
+            })}
+            {/* <Plane args={[10]} rotation-x={-Math.PI / 2 + 0.01}>
               <meshStandardMaterial color={"white"} />
           </Plane> */}
+          </group>
         </group>
-      </group>
-    </Hud>
+      </Hud>
+    )
   );
 }
 

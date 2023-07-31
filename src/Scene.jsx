@@ -158,11 +158,14 @@ function Still({
   const setCursor = useStore((state) => state.setCursor);
   const addFov = useStore((state) => state.addFov);
   const setControlEnabled = useStore((state) => state.setControlEnabled);
+  const setPieMenuOpen = useStore((state) => state.setPieMenuOpen);
+
   //const addFov = useLiveStore((state) => state.addFov);
 
   //const tex = useTexture("/still4.jpg");
 
   const timer = useRef();
+  const setAttention = useStore((state) => state.setAttention);
 
   const video = useRef(document.createElement("video"));
   video.current.playsInline = true;
@@ -236,6 +239,18 @@ function Still({
             setCursor(xyz2latlng(e.point));
             //cancel();
           }}
+          onContextMenu={(e) => {
+            //(e) => e.nativeEvent.preventDefault();
+            //event.preventDefault();
+            setPieMenuOpen({ x: e.clientX, y: e.clientY });
+          }}
+          onDoubleClick={(e) => {
+            setAttention(true);
+            if (timer.current) clearTimeout(timer.current);
+            timer.current = setTimeout(() => {
+              setAttention(false);
+            }, 1400);
+          }}
           /*
           onDoubleClick={(e) => {
             addFlag(xyz2latlng(e.point), myId);
@@ -248,6 +263,7 @@ function Still({
               key={ProjectedMaterial.key}
               ref={mat}
               map={tex.current}
+              toneMapped={false}
             />
           ) : (
             <meshBasicMaterial
@@ -792,20 +808,17 @@ function Indicator() {
   const displayType = useStore((state) => state.displayType);
   const Wrapper = displayType === "sphere2" ? Hud : Fragment;
   return (
-    <Wrapper>
-      <Environment preset="city"></Environment>
-      <Grid />
-      <Ghosts />
-    </Wrapper>
+    (displayType === "sphere" || displayType === "sphere2") && (
+      <Wrapper>
+        <Environment preset="city"></Environment>
+        <Grid />
+        <Ghosts />
+      </Wrapper>
+    )
   );
 }
 
 export default function Scene() {
-  const timer = useRef();
-  const setAttention = useStore((state) => state.setAttention);
-  const displayType = useStore((state) => state.displayType);
-  const setPieMenuOpen = useStore((state) => state.setPieMenuOpen);
-
   /*
   const handleMouseDown = (event) => {
     const timeoutId = setTimeout(() => {
@@ -833,21 +846,9 @@ export default function Scene() {
   return (
     <>
       <Canvas
-        onDoubleClick={(e) => {
-          setAttention(true);
-          if (timer.current) clearTimeout(timer.current);
-          timer.current = setTimeout(() => {
-            setAttention(false);
-          }, 1400);
-        }}
-        onContextMenu={(event) => {
-          event.preventDefault();
-          setPieMenuOpen({ x: event.clientX, y: event.clientY });
-        }}
-        //linear
+        onContextMenu={(e) => e.preventDefault()}
         //onMouseDown={handleMouseDown}
       >
-        {/* <directionalLight /> */}
         <Suspense>
           <Still />
         </Suspense>
@@ -855,14 +856,8 @@ export default function Scene() {
         <MyCamera />
         <Control />
         <Camera />
-
-        {(displayType === "sphere" || displayType === "sphere2") && (
-          <Indicator />
-        )}
-        {/* <Cursors /> */}
-        {/*  */}
-        {displayType === "observatory" && <Observatory />}
-
+        <Indicator />
+        <Observatory />
         <UI />
       </Canvas>
       <ContextMenu />
