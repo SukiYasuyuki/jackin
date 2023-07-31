@@ -67,7 +67,7 @@ function Control() {
         controls.current.rotateTo(
           target.presence.angle.azimuth,
           target.presence.angle.polaris,
-          false
+          true
         );
         // controls.current.setAzimuthalAngle(target.presence.angle.azimuth);
         // controls.current.setPolarAngle(target.presence.angle.polaris);

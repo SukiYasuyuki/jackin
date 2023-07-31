@@ -35,6 +35,8 @@ const SectionHeader = styled("div", {
 const Image = styled("div", {
   border: "1px solid gray",
   aspectRatio: "16 / 9",
+  backgroundSize: "cover",
+
   marginBottom: 4,
   cursor: "pointer",
   variants: {
@@ -52,10 +54,13 @@ const Label = styled("div", {
   textAlign: "center",
 });
 
-function Tile({ label, selected, ...props }) {
+function Tile({ label, selected, src, ...props }) {
   return (
     <div {...props}>
-      <Image selected={selected}></Image>
+      <Image
+        selected={selected}
+        style={{ backgroundImage: `url(${src})` }}
+      ></Image>
       <Label>{label}</Label>
     </div>
   );
@@ -97,31 +102,36 @@ function Settings() {
             <SectionHeader>表示タイプ</SectionHeader>
             <Grid>
               <Tile
-                label={"Side Bar"}
+                label={"A. Side Bar"}
                 selected={displayType === "sidebar"}
                 onClick={() => setDisplayType("sidebar")}
+                src={"/type/sidebar.png"}
               />
               <Tile
-                label={"Surround"}
+                label={"B. Surround"}
                 selected={displayType === "surround"}
                 onClick={() => setDisplayType("surround")}
+                src={"/type/surround.png"}
               />
               <Tile
-                label={"Sphere1"}
+                label={"C. Sphere1"}
                 selected={displayType === "sphere"}
                 onClick={() =>
                   displayType !== "sphere" && setDisplayType("sphere")
                 }
+                src={"/type/sphere.png"}
               />
               <Tile
-                label={"Sphere2"}
+                label={"C'. Sphere2"}
                 selected={displayType === "sphere2"}
                 onClick={() => setDisplayType("sphere2")}
+                src={"/type/sphere2.png"}
               />
               <Tile
-                label={"Crew"}
+                label={"D. Crew"}
                 selected={displayType === "observatory"}
                 onClick={() => setDisplayType("observatory")}
+                src={"/type/crew.png"}
               />
               <Tile
                 label={"Compass"}
@@ -129,6 +139,7 @@ function Settings() {
                 onClick={() =>
                   displayType !== "compass" && setDisplayType("compass")
                 }
+                src={"/type/compass.png"}
               />
             </Grid>
           </Section>
