@@ -831,7 +831,7 @@ export default function Scene() {
   const setPieMenuOpen = useStore((state) => state.setPieMenuOpen);
   const addReaction = useStore((state) => state.addReaction);
   const myId = useMyId();
-
+  /*
   const handleMouseDown = (event) => {
     const timeoutId = setTimeout(() => {
       setPieMenuOpen({ x: event.clientX, y: event.clientY });
@@ -854,6 +854,7 @@ export default function Scene() {
       clearTimeout(timeoutId);
     };
   };
+  */
   return (
     <>
       <Canvas
@@ -864,8 +865,12 @@ export default function Scene() {
             setAttention(false);
           }, 1400);
         }}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          setPieMenuOpen({ x: event.clientX, y: event.clientY });
+        }}
         //linear
-        onMouseDown={handleMouseDown}
+        //onMouseDown={handleMouseDown}
       >
         {/* <directionalLight /> */}
         <Suspense>
