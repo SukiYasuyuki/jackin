@@ -64,7 +64,7 @@ function Control() {
       const target = others.find(({ connectionId }) => connectionId === sync);
       //console.log(presence);
       if (target && target.presence) {
-        controls.current.rotate(
+        controls.current.rotateTo(
           target.presence.angle.azimuth,
           target.presence.angle.polaris,
           false
