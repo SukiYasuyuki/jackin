@@ -11,7 +11,7 @@ const Container = styled("div", {
 
 const Wizard = styled("div", {
   width: "400px",
-  height: "400px",
+  height: "300px",
   background: "#111",
   borderRadius: 16,
   padding: 32,
@@ -55,11 +55,13 @@ export default function LogIn() {
   const [id, setId] = useState("");
   const setName = useStore((state) => state.setName);
 
+  const others = useStore((state) => state.liveblocks.others);
+
   return (
     <Container>
       <Wizard>
         <Title>JackIn...</Title>
-        <div>3人のゴーストが参加中</div>
+        <div>{others.length}人のゴーストが参加中</div>
         <Form
           onSubmit={(e) => {
             setName(name);
@@ -75,15 +77,7 @@ export default function LogIn() {
               onChange={(e) => set(e.target.value)}
             />
           </Section>
-          <Section>
-            <label>合言葉 (Optional)</label>
-            <Input
-              type="text"
-              value={id}
-              placeholder={"知人のみのグループで参加する場合に設定します"}
-              onChange={(e) => setId(e.target.value)}
-            />
-          </Section>
+
           <div style={{ flex: 1 }} />
           <Input
             disabled={!name}
