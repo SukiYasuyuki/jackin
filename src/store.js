@@ -106,6 +106,8 @@ const useStore = create()(
       playing: false,
       play: () => set({ playing: true }),
       pause: () => set({ playing: false }),
+      capture: null,
+      setCapture: (capture) => set({ capture }),
     }),
     {
       client,

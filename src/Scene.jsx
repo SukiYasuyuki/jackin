@@ -10,6 +10,7 @@ import {
   Line,
   Edges,
   Circle,
+  useTexture,
 } from "@react-three/drei";
 import { Suspense, Fragment, useEffect, useState } from "react";
 import * as THREE from "three";
@@ -34,6 +35,11 @@ import Hud from "./Hud";
 import Observatory from "./components/Observatory";
 import Hls from "hls.js";
 import { Perf } from "r3f-perf";
+import Snd from "snd-lib";
+import Capture from "./Capture";
+
+const snd = new Snd();
+snd.load(Snd.KITS.SND01);
 
 function Control() {
   const setAngle = useStore((state) => state.setAngle);
@@ -210,6 +216,8 @@ function Still({
   const tex = useRef(new THREE.VideoTexture(video.current));
   tex.current.needsUpdate = true;
 
+  //const tex2 = useTexture("/still4.jpg");
+
   const mat = useRef();
   const displayType = useStore((state) => state.displayType);
 
@@ -254,6 +262,7 @@ function Still({
               setAttention(false);
             }, 1400);
           }}
+          //onMouseDown={handleMouseDown}
           /*
           onDoubleClick={(e) => {
             addFlag(xyz2latlng(e.point), myId);
@@ -273,6 +282,7 @@ function Still({
               toneMapped={false}
               side={THREE.BackSide}
               map={tex.current}
+              //map={tex2}
             />
           )}
         </Sphere>
@@ -846,11 +856,45 @@ export default function Scene() {
     };
   };
   */
+  const canvas = useRef();
+  const setCapture = useStore((state) => state.setCapture);
+  const handleMouseDown = (event) => {
+    const timeoutId = setTimeout(() => {
+      const base64 = canvas.current.toDataURL("image/png");
+      const rect = canvas.current.getClientRects();
+
+      setCapture({
+        data: base64,
+        x: event.clientX,
+        y: event.clientY,
+        width: rect[0].width,
+        height: rect[0].height,
+      });
+      snd.play(Snd.SOUNDS.TRANSITION_UP);
+    }, 250);
+
+    const handleMouseUp = () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    const handleMouseMove = () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+  };
   return (
     <>
       <Canvas
+        ref={canvas}
         onContextMenu={(e) => e.preventDefault()}
-        //onMouseDown={handleMouseDown}
+        gl={{ preserveDrawingBuffer: true }}
+        onMouseDown={handleMouseDown}
       >
         <Suspense>
           <Still />
@@ -864,6 +908,7 @@ export default function Scene() {
         <UI />
       </Canvas>
       <ContextMenu />
+      <Capture />
     </>
   );
 }
