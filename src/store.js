@@ -22,7 +22,7 @@ const useStore = create()(
         mouthWide: 1,
       },
       edge: false,
-      displayType: "sphere",
+      displayType: "compass",
       setDisplayType: (displayType) => set({ displayType }),
       speaking: "",
       setSpeaking: (speaking) => set({ speaking }),

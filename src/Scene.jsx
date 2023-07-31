@@ -59,18 +59,21 @@ function Control() {
     controls.current?.dolly(stepback ? -100 : 100, true);
   }, [stepback]);
 
-  /*
   useFrame(() => {
     if (!!sync) {
       const target = others.find(({ connectionId }) => connectionId === sync);
       //console.log(presence);
       if (target && target.presence) {
-        controls.current.setAzimuthalAngle(target.presence.angle.azimuth);
-        controls.current.setPolarAngle(target.presence.angle.polaris);
+        controls.current.rotate(
+          target.presence.angle.azimuth,
+          target.presence.angle.polaris,
+          false
+        );
+        // controls.current.setAzimuthalAngle(target.presence.angle.azimuth);
+        // controls.current.setPolarAngle(target.presence.angle.polaris);
       }
     }
   });
-  */
 
   const setDragging = useStore((state) => state.setDragging);
   const pieMenuOpen = useStore((state) => state.pieMenuOpen);
