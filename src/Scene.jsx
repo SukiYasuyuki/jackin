@@ -37,6 +37,8 @@ import Hls from "hls.js";
 import { Perf } from "r3f-perf";
 import Snd from "snd-lib";
 import Capture from "./Capture";
+import { useMemo } from "react";
+import { useCallback } from "react";
 
 const snd = new Snd();
 snd.load(Snd.KITS.SND01);
@@ -858,7 +860,7 @@ export default function Scene() {
   */
   const canvas = useRef();
   const setCapture = useStore((state) => state.setCapture);
-  const handleMouseDown = (event) => {
+  const handleMouseDown = useCallback((event) => {
     const timeoutId = setTimeout(() => {
       const base64 = canvas.current.toDataURL("image/png");
       const rect = canvas.current.getClientRects();
@@ -887,28 +889,33 @@ export default function Scene() {
 
     document.addEventListener("mouseup", handleMouseUp);
     document.addEventListener("mousemove", handleMouseMove);
-  };
-  return (
-    <>
-      <Canvas
-        ref={canvas}
-        onContextMenu={(e) => e.preventDefault()}
-        gl={{ preserveDrawingBuffer: true }}
-        onMouseDown={handleMouseDown}
-      >
-        <Suspense>
-          <Still />
-        </Suspense>
+  }, []);
 
-        <MyCamera />
-        <Control />
-        <Camera />
-        <Indicator />
-        <Observatory />
-        <UI />
-      </Canvas>
-      <ContextMenu />
-      <Capture />
-    </>
+  const scene = useMemo(
+    () => (
+      <>
+        <Canvas
+          ref={canvas}
+          onContextMenu={(e) => e.preventDefault()}
+          gl={{ preserveDrawingBuffer: true }}
+          onMouseDown={handleMouseDown}
+        >
+          <Suspense>
+            <Still />
+          </Suspense>
+
+          <MyCamera />
+          <Control />
+          <Camera />
+          <Indicator />
+          <Observatory />
+          <UI />
+        </Canvas>
+        <ContextMenu />
+        <Capture />
+      </>
+    ),
+    []
   );
+  return scene;
 }

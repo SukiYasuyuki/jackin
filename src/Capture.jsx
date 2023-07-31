@@ -24,7 +24,7 @@ const Bar = styled("div", {
     position: "absolute",
     inset: 0,
     background: "White",
-    animation: `${scaleUp} 10000ms infinite linear`,
+    animation: `${scaleUp} 8000ms infinite linear`,
     transformOrigin: "left",
   },
 });
@@ -49,7 +49,7 @@ function CommentInput() {
     snd.play(Snd.SOUNDS.TRANSITION_DOWN);
   };
   useEffect(() => {
-    timer.current = setTimeout(finish, 6000);
+    timer.current = setTimeout(finish, 8000);
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
